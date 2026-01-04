@@ -237,9 +237,9 @@ class CapacityTile extends ConsumerWidget {
 
       if (unlimitedCount == 1) {
         // Show which one is open
-        if (vipCapacity == 99999)
+        if (vipCapacity == 99999) {
           label = 'VIP Open Capacity';
-        else if (premiumCapacity == 99999)
+        } else if (premiumCapacity == 99999)
           label = 'Premium Open Capacity';
         else
           label = 'Regular Open Capacity';

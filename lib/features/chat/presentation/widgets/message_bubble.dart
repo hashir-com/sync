@@ -10,11 +10,11 @@ class MessageBubble extends StatelessWidget {
   final bool isDark;
 
   const MessageBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.isMe,
     required this.isDark,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,6 @@
 // lib/features/legal/presentation/screens/privacy_security_screen.dart
 import 'package:flutter/material.dart';
 import 'package:sync_event/core/constants/app_colors.dart';
-import 'package:sync_event/core/constants/app_sizes.dart';
 import 'package:sync_event/core/constants/app_text_styles.dart';
 import 'package:sync_event/core/util/responsive_util.dart';
 

@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:dartz/dartz.dart';
-import 'package:equatable/equatable.dart';
 import 'package:sync_event/core/error/exceptions.dart';
 import 'package:sync_event/core/error/failures.dart';
 import 'package:sync_event/core/network/network_info.dart';

@@ -30,11 +30,14 @@ android {
 
     signingConfigs {
         create("release") {
-            
-            keyAlias = "upload"
-            keyPassword = "ashirhash"
-            storeFile = file("../upload-keystore.jks")
-            storePassword = "ashirhash"
+            val keystoreFile = file("../upload-keystore.jks")
+            // Only set signing config if keystore file exists
+            if (keystoreFile.exists()) {
+                keyAlias = "upload"
+                keyPassword = "ashirhash"
+                storeFile = keystoreFile
+                storePassword = "ashirhash"
+            }
         }
     }
 
@@ -42,7 +45,12 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("release")
+            
+            // Only use release signing if keystore exists
+            val keystoreFile = file("../upload-keystore.jks")
+            if (keystoreFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
 
             //  Add ProGuard config to handle Razorpay & Flutter issues
             proguardFiles(
@@ -52,7 +60,8 @@ android {
         }
 
         getByName("debug") {
-            signingConfig = signingConfigs.getByName("release")
+            // REMOVED: Don't use release signing for debug builds
+            // Debug builds will use the default debug signing automatically
         }
     }
 }
