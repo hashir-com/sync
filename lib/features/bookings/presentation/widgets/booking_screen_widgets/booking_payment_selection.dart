@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sync_event/core/constants/app_colors.dart';
@@ -38,6 +38,21 @@ class BookingPaymentSection extends ConsumerWidget {
     final authState = ref.watch(authNotifierProvider);
     final userId = authState.user?.uid ?? '';
     final userEmail = authState.user?.email ?? '';
+
+    // CRITICAL DEBUG LOGGING
+    print('═══════════════════════════════════════');
+    print('🔍 PAYMENT SECTION DEBUG:');
+    print('User ID: ${userId.isEmpty ? "❌ EMPTY" : "✓ $userId"}');
+    print('User Email: ${userEmail.isEmpty ? "❌ EMPTY" : "✓ $userEmail"}');
+    print('Auth User Object: ${authState.user != null ? "✓ EXISTS" : "❌ NULL"}');
+    print('Is Loading: ${authState.isLoading}');
+    print('Auth Error: ${authState.error ?? "none"}');
+    if (authState.user != null) {
+      print('User Details:');
+      print('  - Name: ${authState.user!.name ?? "none"}');
+      print('  - Phone: ${authState.user!.phoneNumber ?? "none"}');
+    }
+    print('═══════════════════════════════════════');
 
     final validCategories = event.categoryPrices.entries
         .where(
@@ -228,12 +243,43 @@ class BookingPaymentSection extends ConsumerWidget {
     BookingFormState formState,
     double totalAmount,
   ) async {
+    print('\n💳 === WALLET PAYMENT INITIATED ===');
+    print('User ID: ${userId.isEmpty ? "❌ EMPTY" : userId}');
+    print('User Email: ${userEmail.isEmpty ? "❌ EMPTY" : userEmail}');
+    print('Amount: ₹$totalAmount');
+    
     if (userId.isEmpty) {
+      print('❌ WALLET PAYMENT BLOCKED: User ID is empty');
       _showErrorSnackBar(context, 'Please log in to book tickets');
       return;
     }
 
-    print(' Starting wallet payment for ₹$totalAmount');
+    // If email is empty, ask user to provide it and save to Firestore
+    String? effectiveEmail = userEmail;
+    if (userEmail.isEmpty) {
+      print('⚠️ Email is empty, prompting user...');
+      effectiveEmail = await _showEmailInputDialog(context);
+      if (effectiveEmail == null || effectiveEmail.isEmpty) {
+        print('❌ WALLET PAYMENT CANCELLED: User did not provide email');
+        _showErrorSnackBar(context, 'Email is required for booking confirmation');
+        return;
+      }
+      
+      // Save email to Firestore for future use
+      try {
+        print('💾 Saving email to Firestore...');
+        // You'll need to import your UserProfileService
+        // For now, save directly to Firestore
+        await _saveEmailToFirestore(userId, effectiveEmail);
+        print('✓ Email saved to Firestore');
+      } catch (e) {
+        print('⚠️ Failed to save email to Firestore: $e');
+        // Continue anyway, we have the email for this booking
+      }
+    }
+    
+    print('Effective email: $effectiveEmail');
+    print('✓ Starting wallet payment for ₹$totalAmount');
 
     // Immediately navigate to confirmation loading screen
     if (context.mounted) {
@@ -244,6 +290,12 @@ class BookingPaymentSection extends ConsumerWidget {
     final walletPaymentId = 'wallet_${uuid.v4()}';
 
     try {
+      print('📤 Sending booking request with:');
+      print('  - Event ID: ${event.id}');
+      print('  - User ID: $userId');
+      print('  - Email: $effectiveEmail');
+      print('  - Amount: ₹$totalAmount');
+      
       await ref
           .read(bookingNotifierProvider.notifier)
           .bookTicket(
@@ -256,13 +308,20 @@ class BookingPaymentSection extends ConsumerWidget {
             startTime: event.startTime,
             endTime: event.endTime,
             seatNumbers: const [],
-            userEmail: userEmail,
+            userEmail: effectiveEmail,
             paymentMethod: 'wallet',
           );
 
-      print('Booking request sent');
-    } catch (e) {
-      print('Exception during wallet payment: $e');
+      print('✓ Wallet booking request sent successfully');
+    } catch (e, stackTrace) {
+      print('❌ Exception during wallet payment:');
+      print('Error: $e');
+      print('Stack trace: $stackTrace');
+      
+      // Show error to user
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Booking failed: ${e.toString()}');
+      }
     }
   }
 
@@ -276,12 +335,62 @@ class BookingPaymentSection extends ConsumerWidget {
     double totalAmount,
     String paymentId,
   ) async {
+    print('\n💰 === RAZORPAY PAYMENT SUCCESS ===');
+    print('Payment ID: $paymentId');
+    print('User ID: ${userId.isEmpty ? "❌ EMPTY" : userId}');
+    print('User Email: ${userEmail.isEmpty ? "❌ EMPTY" : userEmail}');
+    print('Amount: ₹$totalAmount');
+    
     if (userId.isEmpty) {
-      _showErrorSnackBar(context, 'Please log in to book tickets');
-      return;
+      print('❌ RAZORPAY PAYMENT BLOCKED: User ID is empty');
+      print('This means authState.user is NULL when payment callback happened');
+      
+      // Try to refresh auth state
+      print('🔄 Attempting to refresh auth state...');
+      ref.read(authNotifierProvider.notifier).refreshAuthState();
+      
+      // Wait a bit for state to update
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Check again
+      final authState = ref.read(authNotifierProvider);
+      final refreshedUserId = authState.user?.uid ?? '';
+      print('After refresh - User ID: ${refreshedUserId.isEmpty ? "❌ STILL EMPTY" : refreshedUserId}');
+      
+      if (refreshedUserId.isEmpty) {
+        _showErrorSnackBar(context, 'Please log in to book tickets');
+        return;
+      }
+      
+      // Use refreshed user ID
+      userId = refreshedUserId;
+      userEmail = authState.user?.email ?? '';
+      print('✓ Using refreshed user credentials');
     }
 
-    print(' Razorpay payment successful, processing booking...');
+    // If email is still empty after refresh, ask user to provide it and save to Firestore
+    String? effectiveEmail = userEmail;
+    if (userEmail.isEmpty) {
+      print('⚠️ Email is empty, prompting user...');
+      effectiveEmail = await _showEmailInputDialog(context);
+      if (effectiveEmail == null || effectiveEmail.isEmpty) {
+        print('❌ RAZORPAY PAYMENT CANCELLED: User did not provide email');
+        _showErrorSnackBar(context, 'Email is required for booking confirmation');
+        return;
+      }
+      
+      // Save email to Firestore for future use
+      try {
+        print('💾 Saving email to Firestore...');
+        await _saveEmailToFirestore(userId, effectiveEmail);
+        print('✓ Email saved to Firestore');
+      } catch (e) {
+        print('⚠️ Failed to save email to Firestore: $e');
+        // Continue anyway, we have the email for this booking
+      }
+    }
+
+    print('✓ Razorpay payment successful, processing booking...');
 
     // Immediately navigate to confirmation loading screen
     if (context.mounted) {
@@ -289,6 +398,12 @@ class BookingPaymentSection extends ConsumerWidget {
     }
 
     try {
+      print('📤 Sending booking request with:');
+      print('  - Event ID: ${event.id}');
+      print('  - User ID: $userId');
+      print('  - Email: $effectiveEmail');
+      print('  - Amount: ₹$totalAmount');
+      
       await ref
           .read(bookingNotifierProvider.notifier)
           .bookTicket(
@@ -301,13 +416,20 @@ class BookingPaymentSection extends ConsumerWidget {
             startTime: event.startTime,
             endTime: event.endTime,
             seatNumbers: const [],
-            userEmail: userEmail,
+            userEmail: effectiveEmail,
             paymentMethod: 'razorpay',
           );
 
-      print('✓ Booking request sent');
-    } catch (e) {
-      print('✗ Exception during Razorpay payment processing: $e');
+      print('✓ Razorpay booking request sent successfully');
+    } catch (e, stackTrace) {
+      print('❌ Exception during Razorpay payment processing:');
+      print('Error: $e');
+      print('Stack trace: $stackTrace');
+      
+      // Show error to user
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Booking failed: ${e.toString()}');
+      }
     }
   }
 
@@ -403,5 +525,97 @@ class BookingPaymentSection extends ConsumerWidget {
         backgroundColor: AppColors.getError(isDark),
       ),
     );
+  }
+
+  // NEW: Dialog to collect email from phone users
+  Future<String?> _showEmailInputDialog(BuildContext context) async {
+    final emailController = TextEditingController();
+    
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Email Required',
+          style: AppTextStyles.headingSmall(isDark: isDark),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Please provide your email to receive booking confirmation and updates.',
+              style: AppTextStyles.bodyMedium(isDark: isDark),
+            ),
+            SizedBox(height: AppSizes.spacingLarge),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: 'Email Address',
+                hintText: 'your@email.com',
+                prefixIcon: const Icon(Icons.email),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(null),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.getTextSecondary(isDark)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final email = emailController.text.trim();
+              if (email.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Please enter an email address'),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+                return;
+              }
+              // Basic email validation
+              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Please enter a valid email address'),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+                return;
+              }
+              Navigator.of(context).pop(email);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.getPrimary(isDark),
+            ),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to save email to Firestore
+  Future<void> _saveEmailToFirestore(String userId, String email) async {
+    try {
+      // You need to import cloud_firestore package
+      // Add this to your imports: import 'package:cloud_firestore/cloud_firestore.dart';
+      await FirebaseFirestore.instance.collection('users').doc(userId).set({
+        'email': email,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print('Error saving email: $e');
+      rethrow;
+    }
   }
 }

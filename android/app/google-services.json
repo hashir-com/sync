@@ -54,6 +54,14 @@
           }
         },
         {
+          "client_id": "329366449067-n930tgufpl1ip5vb8m82qb1e0iue63eg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ashir.developer.sync_event",
+            "certificate_hash": "d232dc581ef0dffd09d7408c5cbebdc7ee470f01"
+          }
+        },
+        {
           "client_id": "329366449067-gbin7l2n14mc49g6reroram3g89afuvj.apps.googleusercontent.com",
           "client_type": 3
         }
