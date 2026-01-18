@@ -220,8 +220,8 @@ class _EventCard extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Close'),
             style: TextButton.styleFrom(foregroundColor: Colors.blue),
+            child: const Text('Close'),
           ),
         ],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

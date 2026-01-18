@@ -4,6 +4,7 @@ import 'package:sync_event/core/constants/app_colors.dart';
 import 'package:sync_event/core/util/theme_util.dart';
 import 'package:sync_event/features/auth/presentation/providers/auth_notifier.dart';
 import 'package:sync_event/features/events/domain/entities/event_entity.dart';
+import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/ai_bottom_sheet.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/detail_section.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/header_image.dart';
 import 'package:sync_event/widgets/error_boundary.dart';
@@ -76,6 +77,23 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen>
           ),
         ),
       ),
+     floatingActionButton: FloatingActionButton.extended(
+      onPressed: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => AIBottomSheet(
+            event: widget.event,
+            isDark: isDark,
+          ),
+        );
+      },
+      icon: Icon(Icons.auto_awesome),
+      label: Text('AI'),
+      backgroundColor: AppColors.getPrimary(isDark),
+      foregroundColor: Colors.white,
+    ),
     );
   }
 }

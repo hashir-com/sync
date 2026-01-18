@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/flutter projects/sync_event/linux"
+    "cmake.sourceDirectory": "C:/flutter projects/sync_event/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

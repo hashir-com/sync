@@ -6,7 +6,6 @@ import 'package:sync_event/core/constants/app_text_styles.dart';
 import 'package:sync_event/core/util/responsive_util.dart';
 import 'package:sync_event/features/events/domain/entities/event_entity.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/booking_button.dart';
-import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/going_section.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/organizer_tile.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/share_tile.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/detail_tile.dart';

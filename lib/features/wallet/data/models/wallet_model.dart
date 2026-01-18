@@ -5,10 +5,10 @@ class WalletModel extends WalletEntity {
   final List<Map<String, dynamic>> transactionHistory;
 
   const WalletModel({
-    required String userId,
-    required double balance,
+    required super.userId,
+    required super.balance,
     this.transactionHistory = const [],
-  }) : super(userId: userId, balance: balance);
+  });
 
   factory WalletModel.fromJson(Map<String, dynamic> json) {
     return WalletModel(
