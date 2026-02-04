@@ -57,36 +57,51 @@ final filteredEventsProvider = Provider<List<EventEntity>>((ref) {
 
   return eventsAsync.when(
     data: (events) {
-      var filtered = events;
+      final now = DateTime.now();
 
-      // Filter by categories
-      if (filter.selectedCategories.isNotEmpty) {
-        filtered = filtered
-            .where((event) => filter.selectedCategories.contains(event.category))
-            .toList();
-      }
-
-      // Filter by location
-      if (filter.selectedLocation != null) {
-        filtered = filtered
-            .where((event) =>
-                event.location.toLowerCase().contains(filter.selectedLocation!.toLowerCase()))
-            .toList();
-      }
-
-      // Filter by price range
-      filtered = filtered
-          .where((event) =>
-              (event.ticketPrice ?? 0) >= filter.priceRange.min &&
-              (event.ticketPrice ?? double.infinity) <= filter.priceRange.max)
+      // 1️⃣ REMOVE expired events FIRST
+      var filtered = events
+          .where((event) => event.endTime.isAfter(now))
           .toList();
 
-      // Filter by date range
+      // 2️⃣ Filter by categories
+      if (filter.selectedCategories.isNotEmpty) {
+        filtered = filtered
+            .where(
+              (event) => filter.selectedCategories.contains(event.category),
+            )
+            .toList();
+      }
+
+      // 3️⃣ Filter by location
+      if (filter.selectedLocation != null) {
+        filtered = filtered
+            .where(
+              (event) => event.location
+                  .toLowerCase()
+                  .contains(filter.selectedLocation!.toLowerCase()),
+            )
+            .toList();
+      }
+
+      // 4️⃣ Filter by price range
+      filtered = filtered
+          .where(
+            (event) =>
+                (event.ticketPrice ?? 0) >= filter.priceRange.min &&
+                (event.ticketPrice ?? double.infinity) <=
+                    filter.priceRange.max,
+          )
+          .toList();
+
+      // 5️⃣ Filter by date range (start time)
       if (filter.dateRange != null) {
         filtered = filtered
-            .where((event) =>
-                event.startTime.isAfter(filter.dateRange!.start) &&
-                event.startTime.isBefore(filter.dateRange!.end))
+            .where(
+              (event) =>
+                  event.startTime.isAfter(filter.dateRange!.start) &&
+                  event.startTime.isBefore(filter.dateRange!.end),
+            )
             .toList();
       }
 
@@ -96,6 +111,7 @@ final filteredEventsProvider = Provider<List<EventEntity>>((ref) {
     error: (_, __) => [],
   );
 });
+
 
 // Notifier providers
 final createEventNotifierProvider =
