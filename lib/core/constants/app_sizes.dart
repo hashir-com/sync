@@ -53,6 +53,7 @@ class AppSizes {
   static double get spacingXxxl => 32;
   static double get spacingMaxl => 82;
 
+  static double get paddingXxs => 2;
   static double get paddingXs => 4;
   static double get paddingSmall => 8;
   static double get paddingMedium => 12;

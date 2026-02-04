@@ -40,6 +40,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     super.initState();
     _initializeSearchController();
   }
+  
 
   void _initializeSearchController() {
     _searchController.addListener(() {
@@ -288,17 +289,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     return const LatLng(11.8705, 75.3679); // Fallback
   }
 
-  void _setupEventListener() {
-    ref.listen(eventsMapProvider, (previous, state) {
-      state.whenData((events) {
-        print('MapScreen: Events updated, ${events.length} events received');
-        ref.read(allEventsProvider.notifier).state = events;
-        Future.microtask(
-          () => ref.read(markerStateProvider.notifier).buildMarkers(events),
-        );
-      });
+ void _setupEventListener() {
+  ref.listen(eventsMapProvider, (previous, state) {
+    state.whenData((events) {
+      final now = DateTime.now();
+
+      final activeEvents = events.where((event) {
+        return event.endTime.isAfter(now);
+      }).toList();
+
+      ref.read(allEventsProvider.notifier).state = activeEvents;
+      ref.read(markerStateProvider.notifier).buildMarkers(activeEvents);
     });
-  }
+  });
+}
+
 
   Future<void> _handleLocateMe() async {
     try {

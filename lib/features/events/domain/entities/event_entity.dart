@@ -163,4 +163,7 @@ class EventEntity extends Equatable {
   // Helper for location subtitle
   String get locationSubtitle => location.contains(',') ? location.split(',').skip(1).join(',').trim() : 'Event location';
 
+  bool get isExpired => DateTime.now().isAfter(endTime);
+
+
 }
