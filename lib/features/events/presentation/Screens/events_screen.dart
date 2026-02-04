@@ -21,6 +21,7 @@ class EventsScreen extends ConsumerWidget {
     final filter = ref.watch(eventFilterProvider);
     final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
     final isDark = ThemeUtils.isDark(context);
+    
 
     return SafeArea(
       child: Scaffold(

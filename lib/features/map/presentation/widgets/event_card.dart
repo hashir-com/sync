@@ -12,6 +12,7 @@ import 'package:sync_event/core/constants/app_text_styles.dart';
 import 'package:sync_event/core/util/theme_util.dart';
 import 'package:sync_event/features/events/domain/entities/event_entity.dart';
 import 'package:sync_event/features/map/presentation/provider/map_providers.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EventDetailCard extends ConsumerWidget {
   final EventEntity event;
@@ -55,7 +56,15 @@ class EventDetailCard extends ConsumerWidget {
               children: [
                 _buildHeader(isDark, ref),
                 SizedBox(height: AppSizes.spacingMedium),
-                _buildDescription(isDark),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildAttendeeInfo(isDark),
+                    _buildDescription(isDark),
+                            
+
+                  ],
+                ),
                 SizedBox(height: AppSizes.spacingMedium),
                 _buildFooter(isDark, context, ref),
               ],
@@ -71,7 +80,7 @@ class EventDetailCard extends ConsumerWidget {
     return Row(
       children: [
         Hero(
-          tag: event.id,
+          tag: 'event_${event.id}',
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
@@ -113,17 +122,17 @@ class EventDetailCard extends ConsumerWidget {
         Text(
           event.title,
           style: AppTextStyles.titleMedium(isDark: isDark).copyWith(
-            fontSize: AppSizes.fontLarge,
+            fontSize: AppSizes.fontXxxl,
             fontWeight: FontWeight.w600,
           ),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        SizedBox(height: AppSizes.spacingSmall),
+        SizedBox(height: AppSizes.spacingXs),
         Container(
           padding: EdgeInsets.symmetric(
-            horizontal: AppSizes.chipPaddingHorizontal,
-            vertical: AppSizes.chipPaddingVertical,
+            horizontal: AppSizes.chipPaddingHorizontal-4,
+            vertical: AppSizes.chipPaddingVertical-4,
           ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -132,7 +141,7 @@ class EventDetailCard extends ConsumerWidget {
                 AppColors.getPrimary(isDark).withOpacity(0.2),
               ],
             ),
-            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
           ),
           child: Text(
             event.category,
@@ -176,10 +185,10 @@ class EventDetailCard extends ConsumerWidget {
   // BuildDescription: Display event description
   Widget _buildDescription(bool isDark) {
     return Container(
-      padding: EdgeInsets.all(AppSizes.paddingMedium),
+      padding: EdgeInsets.all(AppSizes.paddingMedium-2),
       decoration: BoxDecoration(
         color: AppColors.getSurface(isDark),
-        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
         border: Border.all(
           color: AppColors.getBorder(isDark),
           width: AppSizes.borderWidthThin,
@@ -199,10 +208,38 @@ class EventDetailCard extends ConsumerWidget {
   // BuildFooter: Display attendee info and view details button
   Widget _buildFooter(bool isDark, BuildContext context, WidgetRef ref) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildAttendeeInfo(isDark),
         _buildViewDetailsButton(isDark, context, ref),
+        SizedBox(width: AppSizes.spacingMedium),
+        InkWell(
+            borderRadius: BorderRadius.circular(AppSizes.radiusXl),
+            onTap: () {
+              openGoogleMaps(event.latitude, event.longitude);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSizes.paddingSmall,
+                vertical: AppSizes.paddingMedium,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.getPrimary(isDark),
+                borderRadius: BorderRadius.circular(AppSizes.radiusXl),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.getShadow(isDark),
+                    blurRadius: AppSizes.cardElevationLow * 3,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                
+                Icons.navigation_rounded,
+                color: Colors.white,
+                size: AppSizes.iconSmall,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -248,8 +285,7 @@ class EventDetailCard extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) {
-    return Material(
-      color: Colors.transparent,
+    return Expanded(
       child: InkWell(
         borderRadius: BorderRadius.circular(AppSizes.radiusXl),
         onTap: () {
@@ -258,7 +294,7 @@ class EventDetailCard extends ConsumerWidget {
         },
         child: Container(
           padding: EdgeInsets.symmetric(
-            horizontal: AppSizes.paddingXl,
+            horizontal: AppSizes.paddingSmall,
             vertical: AppSizes.paddingMedium,
           ),
           decoration: BoxDecoration(
@@ -273,7 +309,7 @@ class EventDetailCard extends ConsumerWidget {
             ],
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 'View Details',
@@ -283,7 +319,7 @@ class EventDetailCard extends ConsumerWidget {
                   fontSize: AppSizes.fontMedium,
                 ),
               ),
-              SizedBox(width: AppSizes.spacingSmall),
+              SizedBox(width: AppSizes.spacingXs),
               Icon(
                 Icons.arrow_forward_rounded,
                 color: Colors.white,
@@ -294,5 +330,21 @@ class EventDetailCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+
+Future<void> openGoogleMaps(double? lat, double? lng) async {
+  final Uri url = Uri.parse(
+    'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+  );
+
+  if (await canLaunchUrl(url)) {
+    await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    );
+  } else {
+    throw 'Could not open Google Maps';
   }
 }

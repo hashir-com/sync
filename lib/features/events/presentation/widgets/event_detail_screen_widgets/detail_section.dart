@@ -6,7 +6,6 @@ import 'package:sync_event/core/constants/app_text_styles.dart';
 import 'package:sync_event/core/util/responsive_util.dart';
 import 'package:sync_event/features/events/domain/entities/event_entity.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/booking_button.dart';
-import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/going_section.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/organizer_tile.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/share_tile.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_detail_screen_widgets/detail_tile.dart';
@@ -41,17 +40,25 @@ class DetailSection extends StatelessWidget {
             // Safe rebuild context
             builder: (context) {
               try {
-               final title = event.title;
-final formattedDate = event.formattedDate;
-final formattedDayTime = event.formattedDayTime;
-final formattedDuration = event.formattedDuration;
-final location = event.location;
-final locationSubtitle = event.locationSubtitle;
-final description = event.description;
-final organizerId = event.organizerId;
-final organizerName = event.organizerName;
-final eventId = event.id;
-
+                // Null-safe props with defaults
+                final title = event.title ?? 'Untitled Event';
+                final formattedDate = _safeFormat(
+                  event.formattedDate ?? 'Date TBD',
+                );
+                final formattedDayTime = _safeFormat(
+                  event.formattedDayTime ?? 'Time TBD',
+                );
+                final formattedDuration = _safeFormat(
+                  event.formattedDuration ?? 'Duration TBD',
+                );
+                final location = event.location ?? 'Location TBD';
+                final locationSubtitle = event.locationSubtitle ?? '';
+                final description =
+                    event.description ?? 'No description available.';
+                final organizerId = event.organizerId ?? '';
+                final organizerName =
+                    event.organizerName ?? 'Unknown Organizer';
+                final eventId = event.id ?? ''; // For BookingButton
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,45 +114,6 @@ final eventId = event.id;
                       style: AppTextStyles.bodyMedium(isDark: isDark),
                     ),
                     SizedBox(height: AppSizes.spacingXxl),
-                    if (event.hasStarted && !event.hasEnded) ...[
-  Container(
-    padding: EdgeInsets.all(AppSizes.paddingSmall),
-    decoration: BoxDecoration(
-      color: Colors.orange.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Text(
-      'Event has started',
-      style: AppTextStyles.bodyMedium(isDark: isDark).copyWith(
-        color: Colors.orange,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  ),
-  SizedBox(height: AppSizes.spacingMedium),
-],
-
-event.hasStarted || event.hasEnded ?  // Check if event has started but not yet ended
-  SizedBox(
-    width: double.infinity,
-    child: Container(
-      padding: EdgeInsets.all(AppSizes.paddingSmall),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          'Event has Started - Booking Closed',
-          style: AppTextStyles.bodyMedium(isDark: isDark).copyWith(
-            color: Colors.red,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    ),
-  ):
-
                     BookingButton(
                       eventId: eventId,
                       isOrganizer: isOrganizer,

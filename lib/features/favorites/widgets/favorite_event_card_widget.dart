@@ -14,7 +14,7 @@ class FavoriteEventCard extends StatelessWidget {
   final VoidCallback onFavoriteTap;
   final VoidCallback onTap;
 
-  const FavoriteEventCard({
+  const FavoriteEventCard({super.key, 
     required this.event,
     required this.isDark,
     required this.isFavorite,

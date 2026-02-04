@@ -5,10 +5,7 @@ import 'package:sync_event/core/constants/app_colors.dart';
 import 'package:sync_event/core/constants/app_sizes.dart';
 import 'package:sync_event/core/constants/app_text_styles.dart';
 import 'package:sync_event/core/constants/app_theme.dart';
-import 'package:sync_event/core/util/responsive_util.dart';
 import 'package:sync_event/features/chat/presentation/providers/chat_providers.dart';
-import 'package:sync_event/features/chat/presentation/widgets/message_bubble.dart';
-import 'package:sync_event/features/chat/presentation/widgets/message_input_field.dart';
 import 'package:sync_event/features/profile/presentation/providers/other_users_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

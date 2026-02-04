@@ -41,9 +41,8 @@ class _EditEventScreenState extends ConsumerState<EditEventScreen> {
           SnackBar(
             content: Text(
               'Error opening location picker: $e',
-              style: AppTextStyles.bodyMedium(
-                isDark: true,
-              ).copyWith(color: Colors.white),
+              style: AppTextStyles.bodyMedium(isDark: true)
+                  .copyWith(color: Colors.white),
             ),
             backgroundColor: AppColors.getError(isDark),
             behavior: SnackBarBehavior.floating,
@@ -57,8 +56,6 @@ class _EditEventScreenState extends ConsumerState<EditEventScreen> {
       return null;
     }
   }
-
-  // Replace the _handleUpdate method in EditEventScreen with this:
 
   Future<void> _handleUpdate() async {
     final formData = ref.read(editEventFormProvider);
@@ -93,21 +90,6 @@ class _EditEventScreenState extends ConsumerState<EditEventScreen> {
       }
     }
 
-    // Calculate total capacity from categories
-    final totalCapacity = formData.categoryCapacities.values.fold(
-      0,
-      (a, b) => a + b,
-    );
-    final finalCapacity = totalCapacity >= 99999 * 3 ? 99999 : totalCapacity;
-
-    // Get minimum price from categories
-    final positivePrices = formData.categoryPrices.values
-        .where((p) => p > 0)
-        .toList();
-    final minPrice = positivePrices.isNotEmpty
-        ? positivePrices.reduce((a, b) => a < b ? a : b)
-        : 0.0;
-
     // Create updated event
     final updatedEvent = EventEntity(
       id: widget.event.id,
@@ -119,19 +101,18 @@ class _EditEventScreenState extends ConsumerState<EditEventScreen> {
       organizerId: widget.event.organizerId,
       organizerName: widget.event.organizerName,
       attendees: widget.event.attendees,
-      maxAttendees: finalCapacity,
+      maxAttendees: formData.maxAttendees,
       category: formData.category,
       latitude: formData.latitude ?? widget.event.latitude,
       longitude: formData.longitude ?? widget.event.longitude,
       createdAt: widget.event.createdAt,
       updatedAt: DateTime.now(),
-      ticketPrice: minPrice,
+      ticketPrice: formData.ticketPrice,
       imageUrl: formData.existingImageUrl,
       documentUrl: formData.existingDocumentUrl,
       status: 'pending',
       approvalReason: null,
-      rejectionReason: null,
-      availableTickets: 0,
+      rejectionReason: null, availableTickets: 0,
     );
 
     // Submit update
@@ -150,9 +131,8 @@ class _EditEventScreenState extends ConsumerState<EditEventScreen> {
       SnackBar(
         content: Text(
           message,
-          style: AppTextStyles.bodyMedium(
-            isDark: true,
-          ).copyWith(color: Colors.white),
+          style: AppTextStyles.bodyMedium(isDark: true)
+              .copyWith(color: Colors.white),
         ),
         backgroundColor: AppColors.getError(isDark),
         behavior: SnackBarBehavior.floating,
@@ -176,9 +156,8 @@ class _EditEventScreenState extends ConsumerState<EditEventScreen> {
           SnackBar(
             content: Text(
               'Event updated and submitted for review!',
-              style: AppTextStyles.bodyMedium(
-                isDark: true,
-              ).copyWith(color: Colors.white),
+              style: AppTextStyles.bodyMedium(isDark: true)
+                  .copyWith(color: Colors.white),
             ),
             backgroundColor: AppColors.getSuccess(isDark),
             behavior: SnackBarBehavior.floating,
@@ -198,7 +177,9 @@ class _EditEventScreenState extends ConsumerState<EditEventScreen> {
       return Scaffold(
         backgroundColor: AppColors.getBackground(isDark),
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.getPrimary(isDark)),
+          child: CircularProgressIndicator(
+            color: AppColors.getPrimary(isDark),
+          ),
         ),
       );
     }

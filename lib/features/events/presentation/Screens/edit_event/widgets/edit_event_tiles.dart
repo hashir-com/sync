@@ -231,9 +231,6 @@ class EditDateTimeTile extends ConsumerWidget {
   }
 }
 
-// Update only the EditCapacityTile and EditPriceTile classes
-// Keep all other classes unchanged
-
 class EditCapacityTile extends ConsumerWidget {
   final EditEventFormData formData;
   final int minAttendees;
@@ -246,47 +243,15 @@ class EditCapacityTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // SMART DISPLAY LOGIC (similar to create event)
-    String label;
-    
-    final vipCapacity = formData.categoryCapacities['vip'] ?? 0;
-    final premiumCapacity = formData.categoryCapacities['premium'] ?? 0;
-    final regularCapacity = formData.categoryCapacities['regular'] ?? 0;
-
-    final allUnlimited =
-        vipCapacity == 99999 &&
-        premiumCapacity == 99999 &&
-        regularCapacity == 99999;
-
-    if (allUnlimited || formData.isOpenCapacity) {
-      label = 'Open Capacity';
-    } else {
-      final unlimitedCount = [
-        vipCapacity,
-        premiumCapacity,
-        regularCapacity,
-      ].where((c) => c == 99999).length;
-
-      final total = formData.categoryCapacities.values.fold(0, (a, b) => a + b);
-
-      if (unlimitedCount == 1) {
-        if (vipCapacity == 99999)
-          label = 'VIP Open Capacity';
-        else if (premiumCapacity == 99999)
-          label = 'Premium Open Capacity';
-        else
-          label = 'Regular Open Capacity';
-      } else {
-        label = total <= 0 ? 'Max Attendees' : 'Max: $total attendees';
-      }
-    }
-
     return EditEventOptionTile(
       icon: Icons.people_outline_rounded,
-      label: label,
+      label: formData.maxAttendees <= 0
+          ? 'Max Attendees'
+          : 'Max: ${formData.maxAttendees} attendees',
       iconColor: AppColors.warning,
       isRequired: true,
-      onTap: () => EditCapacityDialog.show(context, ref, formData, minAttendees),
+      onTap: () =>
+          EditCapacityDialog.show(context, ref, formData, minAttendees),
     );
   }
 }
@@ -298,20 +263,13 @@ class EditPriceTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final positivePrices = formData.categoryPrices.values
-        .where((p) => p > 0)
-        .toList();
-    final minPrice = positivePrices.isNotEmpty
-        ? positivePrices.reduce((a, b) => a < b ? a : b)
-        : null;
+    final price = formData.ticketPrice ?? 0;
 
     return EditEventOptionTile(
       icon: Icons.confirmation_number_outlined,
-      label: formData.isFreeEvent
+      label: price == 0
           ? 'Free Event'
-          : (minPrice == null
-                ? 'Add Ticket Pricing'
-                : 'Starting from ₹${minPrice.toStringAsFixed(2)}'),
+          : 'Starting from ₹${price.toStringAsFixed(2)}',
       iconColor: AppColors.warning,
       isRequired: true,
       onTap: () => EditPriceDialog.show(context, ref, formData),

@@ -6,10 +6,10 @@ class UserSearchTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const UserSearchTile({
-    Key? key,
+    super.key,
     required this.user,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

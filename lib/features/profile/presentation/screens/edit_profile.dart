@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'package:dartz/dartz.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +10,6 @@ import 'package:sync_event/core/constants/app_text_styles.dart';
 import 'package:sync_event/core/di/injection_container.dart';
 import 'package:sync_event/core/error/failures.dart';
 import 'package:sync_event/core/util/responsive_util.dart';
-import 'package:sync_event/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:sync_event/features/profile/domain/entities/profile_entity.dart';
 import 'package:sync_event/features/profile/domain/repositories/profile_repository.dart';
 import 'package:sync_event/features/profile/presentation/providers/profile_providers.dart';

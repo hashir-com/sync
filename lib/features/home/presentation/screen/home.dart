@@ -6,7 +6,6 @@ import 'package:sync_event/core/constants/app_colors.dart';
 import 'package:sync_event/core/constants/app_sizes.dart';
 import 'package:sync_event/core/constants/app_theme.dart';
 import 'package:sync_event/core/util/responsive_util.dart';
-import 'package:sync_event/core/util/theme_util.dart';
 import 'package:sync_event/features/events/presentation/providers/event_providers.dart';
 import 'package:sync_event/features/home/presentation/widgets/event_section.dart';
 import 'package:sync_event/features/home/presentation/widgets/header_section.dart';

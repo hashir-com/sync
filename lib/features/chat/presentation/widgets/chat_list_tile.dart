@@ -10,11 +10,11 @@ class ChatListTile extends StatelessWidget {
   final bool isDark;
 
   const ChatListTile({
-    Key? key,
+    super.key,
     required this.chat,
     required this.currentUserId,
     required this.isDark,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

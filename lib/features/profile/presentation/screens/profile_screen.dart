@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +10,6 @@ import 'package:sync_event/core/constants/app_text_styles.dart';
 import 'package:sync_event/core/di/injection_container.dart';
 import 'package:sync_event/core/util/responsive_util.dart';
 import 'package:sync_event/core/util/theme_util.dart';
-import 'package:sync_event/features/events/domain/entities/event_entity.dart';
 import 'package:sync_event/features/events/presentation/providers/event_providers.dart'; // For deleteEventUseCaseProvider
 import 'package:sync_event/features/profile/presentation/providers/profile_providers.dart';
 import 'package:sync_event/features/profile/domain/usecases/create_user_usecase.dart'; // For CreateProfileParams and provider
@@ -28,25 +26,13 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _profileCreated = false;
 
-  // Add this to your ProfileScreen's build method - IMPROVED ERROR HANDLING
-
-  // Add this to your ProfileScreen's build method - IMPROVED ERROR HANDLING
-
   @override
   Widget build(BuildContext context) {
     final isDark = ThemeUtils.isDark(context);
-
-    // CRITICAL: Watch auth state to trigger rebuilds on auth changes
-    final authState = ref.watch(authStateProvider);
-
     final currentUser = ref.watch(currentUserProvider);
     final currentUid = currentUser?.uid;
     final isSelf = widget.userId == null || widget.userId == currentUid;
     final effectiveUid = widget.userId ?? currentUid;
-
-    print(
-      ' ProfileScreen build - effectiveUid: $effectiveUid, currentUid: $currentUid',
-    );
 
     if (effectiveUid == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -55,60 +41,50 @@ class ProfileScreenState extends ConsumerState<ProfileScreen> {
     final profileAsync = ref.watch(userByIdProvider(effectiveUid));
     final eventsAsync = ref.watch(userHostedEventsProvider(effectiveUid));
 
-    // IMPROVED: Listen for profile load errors and auto-create profile if needed
+    // Listen for profile load errors and auto-create profile if needed
     ref.listen<AsyncValue<UserModel?>>(userByIdProvider(effectiveUid), (
       previous,
       next,
     ) {
-      next.whenData((user) {
-        if (user == null && !_profileCreated && isSelf && currentUser != null) {
-          _profileCreated = true;
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            try {
-              debugPrint(
-                'Profile not found for ${currentUser.uid}, creating...',
+      if (next.hasError && !_profileCreated && isSelf && currentUser != null) {
+        _profileCreated = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          try {
+            // Create basic user profile using auth user data
+            final params = CreateProfileParams(
+              uid: currentUser.uid,
+              email: currentUser.email ?? '',
+              displayName:
+                  currentUser.displayName ??
+                  currentUser.email?.split('@')[0] ??
+                  'User',
+              bio: '', // Default
+              interests: <String>[], // Default
+            );
+            await ref.read(createUserProfileUseCaseProvider).call(params);
+            // Invalidate to refetch
+            ref.invalidate(userByIdProvider(effectiveUid));
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Profile created successfully!'),
+                  backgroundColor: Colors.green,
+                ),
               );
-
-              final params = CreateProfileParams(
-                uid: currentUser.uid,
-                email: currentUser.email ?? '',
-                displayName:
-                    currentUser.displayName ??
-                    currentUser.email?.split('@')[0] ??
-                    'User',
-                bio: '',
-                interests: <String>[],
-              );
-
-              await ref.read(createUserProfileUseCaseProvider).call(params);
-
-              // Invalidate to refetch
-              ref.invalidate(userByIdProvider(effectiveUid));
-
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile created successfully!'),
-                    backgroundColor: Colors.green,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              }
-            } catch (e) {
-              debugPrint('Failed to create profile: $e');
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to create profile: $e'),
-                    backgroundColor: Colors.red,
-                    duration: Duration(seconds: 3),
-                  ),
-                );
-              }
             }
-          });
-        }
-      });
+          } catch (e) {
+            debugPrint('Failed to create profile: $e');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to create profile: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        });
+      }
     });
 
     return SafeArea(
@@ -121,29 +97,9 @@ class ProfileScreenState extends ConsumerState<ProfileScreen> {
                 return [
                   SliverFillRemaining(
                     child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.person_off_rounded,
-                            size: 64,
-                            color: isDark ? Colors.grey[600] : Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'User not found',
-                            style: AppTextStyles.bodyMedium(isDark: isDark),
-                          ),
-                          if (isSelf && !_profileCreated) ...[
-                            const SizedBox(height: 24),
-                            const CircularProgressIndicator(),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Creating profile...',
-                              style: AppTextStyles.bodySmall(isDark: isDark),
-                            ),
-                          ],
-                        ],
+                      child: Text(
+                        'User not found',
+                        style: AppTextStyles.bodyMedium(isDark: isDark),
                       ),
                     ),
                   ),
@@ -168,58 +124,16 @@ class ProfileScreenState extends ConsumerState<ProfileScreen> {
               ];
             },
             loading: () => [_buildShimmerHeader(context, isDark)],
-            error: (error, stackTrace) {
-              debugPrint('Profile load error: $error');
-              debugPrint('Stack trace: $stackTrace');
-
-              return [
-                SliverFillRemaining(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline_rounded,
-                          size: 64,
-                          color: Colors.red.withOpacity(0.7),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Failed to load profile',
-                          style: AppTextStyles.bodyLarge(isDark: isDark),
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
-                          child: Text(
-                            error.toString(),
-                            style: AppTextStyles.bodySmall(isDark: isDark),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            // Clear cache and retry
-                            ref.invalidate(userByIdProvider(effectiveUid));
-                          },
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.getPrimary(isDark),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 16,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+            error: (_, __) => [
+              SliverFillRemaining(
+                child: Center(
+                  child: Text(
+                    'Failed to load profile',
+                    style: AppTextStyles.bodyMedium(isDark: isDark),
                   ),
                 ),
-              ];
-            },
+              ),
+            ],
           ),
         ),
       ),
@@ -630,34 +544,7 @@ class ProfileScreenState extends ConsumerState<ProfileScreen> {
                 onDelete: isSelf
                     ? () => _showDeleteDialog(context, ref, eventData)
                     : null,
-                onTap: () {
-                  final event = EventEntity(
-                    id: eventData['id'] as String,
-                    title: eventData['title'] as String,
-                    description: eventData['description'] as String,
-                    location: eventData['location'] as String,
-                    startTime: (eventData['startTime'] as Timestamp).toDate(),
-                    endTime: (eventData['endTime'] as Timestamp).toDate(),
-                    organizerId: eventData['organizerId'] as String,
-                    organizerName: eventData['organizerName'] as String,
-                    attendees: List<String>.from(eventData['attendees'] ?? []),
-                    maxAttendees: eventData['maxAttendees'] as int,
-                    category: eventData['category'] as String,
-                    latitude: (eventData['latitude'] as num?)?.toDouble(),
-                    longitude: (eventData['longitude'] as num?)?.toDouble(),
-                    createdAt: (eventData['createdAt'] as Timestamp).toDate(),
-                    updatedAt: (eventData['updatedAt'] as Timestamp).toDate(),
-                    ticketPrice: (eventData['ticketPrice'] as num?)?.toDouble(),
-                    imageUrl: eventData['imageUrl'] as String?,
-                    documentUrl: eventData['documentUrl'] as String?,
-                    status: eventData['status'] as String? ?? 'pending',
-                    approvalReason: eventData['approvalReason'] as String?,
-                    rejectionReason: eventData['rejectionReason'] as String?,
-                    availableTickets:
-                        eventData['availableTickets'] as int? ?? 0,
-                  );
-                  context.push('/event-detail', extra: event);
-                },
+                onTap: () => context.push('/event-detail', extra: eventData),
                 isDark: isDark,
               );
             }, childCount: events.length),
@@ -701,33 +588,7 @@ class ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  void _navigateToEdit(BuildContext context, Map<String, dynamic> eventData) {
-    // Convert Map to EventEntity
-    final event = EventEntity(
-      id: eventData['id'] as String,
-      title: eventData['title'] as String,
-      description: eventData['description'] as String,
-      location: eventData['location'] as String,
-      startTime: (eventData['startTime'] as Timestamp).toDate(),
-      endTime: (eventData['endTime'] as Timestamp).toDate(),
-      organizerId: eventData['organizerId'] as String,
-      organizerName: eventData['organizerName'] as String,
-      attendees: List<String>.from(eventData['attendees'] ?? []),
-      maxAttendees: eventData['maxAttendees'] as int,
-      category: eventData['category'] as String,
-      latitude: (eventData['latitude'] as num?)?.toDouble(),
-      longitude: (eventData['longitude'] as num?)?.toDouble(),
-      createdAt: (eventData['createdAt'] as Timestamp).toDate(),
-      updatedAt: (eventData['updatedAt'] as Timestamp).toDate(),
-      ticketPrice: (eventData['ticketPrice'] as num?)?.toDouble(),
-      imageUrl: eventData['imageUrl'] as String?,
-      documentUrl: eventData['documentUrl'] as String?,
-      status: eventData['status'] as String? ?? 'pending',
-      approvalReason: eventData['approvalReason'] as String?,
-      rejectionReason: eventData['rejectionReason'] as String?,
-      availableTickets: eventData['availableTickets'] as int? ?? 0,
-    );
-
+  void _navigateToEdit(BuildContext context, Map<String, dynamic> event) {
     context.push('/edit-event', extra: event);
   }
 
@@ -876,10 +737,10 @@ class _EventCard extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Close'),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.getPrimary(isDark),
             ),
+            child: const Text('Close'),
           ),
         ],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

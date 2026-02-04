@@ -203,8 +203,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     },
                     calendarBuilders: CalendarBuilders<CalendarEventEntity>(
                       markerBuilder: (context, date, eventsForDay) {
-                        if (eventsForDay.isEmpty)
+                        if (eventsForDay.isEmpty) {
                           return const SizedBox.shrink();
+                        }
 
                         final dotsToShow = eventsForDay.length > 3
                             ? 3

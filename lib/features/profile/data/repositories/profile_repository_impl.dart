@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:sync_event/core/error/exceptions.dart';
@@ -9,7 +8,7 @@ import 'package:sync_event/features/profile/data/datasources/profile_remote_data
 import 'package:sync_event/features/profile/data/models/profile_model.dart';
 import 'package:sync_event/features/profile/domain/entities/profile_entity.dart';
 import 'package:sync_event/features/profile/domain/repositories/profile_repository.dart';
-import 'package:sync_event/features/profile/domain/usecases/create_user_usecase.dart';
+import 'package:sync_event/features/profile/domain/usecases/create_user_usecase.dart'; // Import for CreateProfileParams
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDataSource remoteDataSource;
@@ -28,45 +27,19 @@ class ProfileRepositoryImpl implements ProfileRepository {
       try {
         final profileData = await remoteDataSource.getUserProfile(uid);
         final profileEntity = ProfileModel.fromJson(profileData);
-        
-        // Cache with user-specific identifier
-        final dataToCache = {
-          ...profileEntity.toJson(),
-          'cached_uid': uid, // Store which user this cache belongs to
-        };
-        await localDataSource.cacheProfileData(dataToCache);
-        
+        await localDataSource.cacheProfileData(profileEntity.toJson());
         return Right(profileEntity);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message));
-      } on Exception catch (e) {
-        // Handle case where profile doesn't exist
-        if (e.toString().contains('User profile not found')) {
-          return Left(ServerFailure(message: 'User profile not found'));
-        }
-        return Left(UnknownFailure(message: e.toString()));
       } catch (e) {
         return Left(UnknownFailure(message: e.toString()));
       }
     } else {
       try {
         final cachedData = await localDataSource.getCachedProfileData();
-        
         if (cachedData != null) {
-          // Verify the cached data belongs to the requested user
-          final cachedUid = cachedData['cached_uid'] as String?;
-          
-          if (cachedUid == uid) {
-            return Right(ProfileModel.fromJson(cachedData));
-          } else {
-            // Cache is for a different user, clear it and return error
-            await localDataSource.clearProfileData();
-            return const Left(CacheFailure(
-              message: 'Cached data belongs to different user',
-            ));
-          }
+          return Right(ProfileModel.fromJson(cachedData));
         }
-        
         return const Left(CacheFailure(message: 'No cached data available'));
       } catch (e) {
         return Left(CacheFailure(message: e.toString()));
@@ -84,14 +57,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         await remoteDataSource.updateUserProfile(uid, data);
         final profileData = await remoteDataSource.getUserProfile(uid);
         final profileEntity = ProfileModel.fromJson(profileData);
-        
-        // Update cache with user-specific key
-        final dataToCache = {
-          ...profileEntity.toJson(),
-          'cached_uid': uid,
-        };
-        await localDataSource.cacheProfileData(dataToCache);
-        
+        await localDataSource.cacheProfileData(profileEntity.toJson());
         return Right(profileEntity);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message));
@@ -104,24 +70,17 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, ProfileEntity>> createUserProfile(
-    CreateProfileParams params,
-  ) async {
+  Future<Either<Failure, ProfileEntity>> createUserProfile(CreateProfileParams params) async {
     if (await networkInfo.isConnected) {
       try {
+        // Convert params to data map and create via remote
         final data = params.toMap();
         await remoteDataSource.createUserProfile(params.uid, data);
-        
+        // Fetch the newly created profile to return as entity
         final profileData = await remoteDataSource.getUserProfile(params.uid);
         final profileEntity = ProfileModel.fromJson(profileData);
-        
-        // Cache the new profile with user-specific key
-        final dataToCache = {
-          ...profileEntity.toJson(),
-          'cached_uid': params.uid,
-        };
-        await localDataSource.cacheProfileData(dataToCache);
-        
+        // Cache the new profile
+        await localDataSource.cacheProfileData(profileEntity.toJson());
         return Right(profileEntity);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message));

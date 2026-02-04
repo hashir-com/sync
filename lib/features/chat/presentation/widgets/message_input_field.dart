@@ -9,12 +9,12 @@ class MessageInputField extends StatelessWidget {
   final bool isDark;
 
   const MessageInputField({
-    Key? key,
+    super.key,
     required this.controller,
     required this.onSend,
     this.onImagePick,
     required this.isDark,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
