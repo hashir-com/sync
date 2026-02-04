@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sync_event/core/constants/app_colors.dart';
 import 'package:sync_event/core/constants/app_sizes.dart';
 import 'package:sync_event/core/constants/app_text_styles.dart';
+import 'package:sync_event/features/events/domain/entities/event_entity.dart';
 import 'package:sync_event/features/events/presentation/providers/event_providers.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sync_event/features/events/presentation/widgets/event_screen_widgets/event_page_card.dart';
@@ -168,7 +169,7 @@ class EventsListView extends ConsumerWidget {
                     isFull: isFull,
                     isDark: isDark,
                     onTap: () => context.push('/event-detail', extra: event),
-                    onJoin: () => _joinEvent(context, ref, event.id, currentUserId),
+                    onJoin: () => _joinEvent(context, ref, event, currentUserId),
                   ),
                 );
               },
@@ -183,11 +184,11 @@ class EventsListView extends ConsumerWidget {
   Future<void> _joinEvent(
     BuildContext context,
     WidgetRef ref,
-    String eventId,
+    EventEntity event,
     String userId,
   ) async {
     try {
-      await ref.read(joinEventUseCaseProvider).call(eventId, userId);
+      await ref.read(joinEventUseCaseProvider).call(event, userId);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

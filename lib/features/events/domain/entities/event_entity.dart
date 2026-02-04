@@ -151,6 +151,20 @@ class EventEntity extends Equatable {
     };
   }
 
+    /// Event has started but not yet ended
+  bool get hasStarted =>
+      DateTime.now().isAfter(startTime) &&
+      DateTime.now().isBefore(endTime);
+
+  /// Event is completely over
+  bool get hasEnded =>
+      DateTime.now().isAfter(endTime);
+
+  /// Event is upcoming
+  bool get isUpcoming =>
+      DateTime.now().isBefore(startTime);
+
+
   // Helper for formatted date
   String get formattedDate => DateFormat('d MMMM, yyyy').format(startTime);
 

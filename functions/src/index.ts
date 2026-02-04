@@ -2,6 +2,8 @@ import * as admin from "firebase-admin";
 import * as nodemailer from "nodemailer";
 import { onDocumentCreated, onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+
 
 admin.initializeApp();
 
@@ -13,6 +15,44 @@ const transporter = nodemailer.createTransport({
         pass: process.env.GMAIL_APP_PASSWORD,
     },
 });
+
+// Scheduled cleanup: delete expired events
+export const deleteExpiredEvents = onSchedule(
+  {
+    schedule: "every 5 minutes"
+,
+    timeZone: "UTC", // avoid timezone bugs
+  },
+  async () => {
+    const db = admin.firestore();
+    const now = admin.firestore.Timestamp.now();
+
+    logger.info("Running expired events cleanup job");
+
+    const snapshot = await db
+      .collection("events")
+      .where("endTime", "<", now)
+      .get();
+
+    if (snapshot.empty) {
+      logger.info("No expired events found");
+      return;
+    }
+
+    const batch = db.batch();
+    let deleteCount = 0;
+
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+      deleteCount++;
+    });
+
+    await batch.commit();
+
+    logger.info(`Deleted ${deleteCount} expired events`);
+  }
+);
+
 
 export const sendBookingConfirmationEmail = onDocumentCreated(
   { document: "bookings/{bookingId}" },
