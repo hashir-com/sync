@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -5,15 +8,26 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "ashir.developer.sync_event"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileOptions {
-        // Upgrade to Java 17 (required for latest Android Gradle Plugin)
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -30,29 +44,27 @@ android {
 
     signingConfigs {
         create("release") {
-            
-            keyAlias = "upload"
-            keyPassword = "ashirhash"
-            storeFile = file("../upload-keystore.jks")
-            storePassword = "ashirhash"
+            keyAlias = keystoreProperties.getProperty("keyAlias") ?: "upload"
+            keyPassword = keystoreProperties.getProperty("keyPassword") ?: ""
+            storeFile = file(keystoreProperties.getProperty("storeFile") ?: "../upload-keystore.jks")
+            storePassword = keystoreProperties.getProperty("storePassword") ?: ""
         }
     }
 
     buildTypes {
-        getByName("release") {
+        release {
             isMinifyEnabled = true
             isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
 
-            //  Add ProGuard config to handle Razorpay & Flutter issues
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
 
-        getByName("debug") {
-            signingConfig = signingConfigs.getByName("release")
+        debug {
+            // Debug builds don't need signing config for development
         }
     }
 }
@@ -64,6 +76,6 @@ flutter {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
     implementation("com.google.firebase:firebase-analytics")
-    // Add Razorpay dependency if not already in pubspec.yaml native side
     implementation("com.razorpay:checkout:1.6.33")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

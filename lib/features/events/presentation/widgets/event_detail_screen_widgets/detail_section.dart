@@ -41,24 +41,24 @@ class DetailSection extends StatelessWidget {
             builder: (context) {
               try {
                 // Null-safe props with defaults
-                final title = event.title ?? 'Untitled Event';
+                final title = event.title;
                 final formattedDate = _safeFormat(
-                  event.formattedDate ?? 'Date TBD',
+                  event.formattedDate,
                 );
                 final formattedDayTime = _safeFormat(
-                  event.formattedDayTime ?? 'Time TBD',
+                  event.formattedDayTime,
                 );
                 final formattedDuration = _safeFormat(
-                  event.formattedDuration ?? 'Duration TBD',
+                  event.formattedDuration,
                 );
-                final location = event.location ?? 'Location TBD';
-                final locationSubtitle = event.locationSubtitle ?? '';
+                final location = event.location;
+                final locationSubtitle = event.locationSubtitle;
                 final description =
-                    event.description ?? 'No description available.';
-                final organizerId = event.organizerId ?? '';
+                    event.description;
+                final organizerId = event.organizerId;
                 final organizerName =
-                    event.organizerName ?? 'Unknown Organizer';
-                final eventId = event.id ?? ''; // For BookingButton
+                    event.organizerName;
+                final eventId = event.id; // For BookingButton
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

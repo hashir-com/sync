@@ -2,12 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sync_event/core/constants/app_colors.dart';
-import 'package:sync_event/core/constants/app_sizes.dart';
 import 'package:sync_event/core/constants/app_text_styles.dart';
-import 'package:sync_event/core/di/injection_container.dart';
 import 'package:sync_event/core/util/responsive_util.dart';
 import 'package:sync_event/core/util/theme_util.dart';
 import 'package:sync_event/features/events/presentation/providers/event_providers.dart'; // For deleteEventUseCaseProvider

@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart'
     show kIsWeb, Factory; // Fixed: Only kIsWeb from foundation
 import 'package:flutter/gestures.dart'
     show
-        Factory, // Add Factory here
         OneSequenceGestureRecognizer,
         EagerGestureRecognizer; // Gestures for Factory, etc.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -97,32 +96,29 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               child: const Center(child: LoadingIndicatorWidget()),
             ),
             if (selectedEvent != null)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 400),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  transitionBuilder: (child, animation) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 1.0),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: FadeTransition(opacity: animation, child: child),
-                    );
-                  },
-                  child: Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    key: ValueKey(selectedEvent.id),
-                    child: EventDetailCard(event: selectedEvent),
-                  ),
-                ),
-              ),
+  Positioned(
+    bottom: 0,
+    left: 0,
+    right: 0,
+    child: AnimatedSwitcher(
+      duration: const Duration(milliseconds: 400),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1.0),
+            end: Offset.zero,
+          ).animate(animation),
+          child: FadeTransition(opacity: animation, child: child),
+        );
+      },
+      child: EventDetailCard(  //  FIXED - No Positioned here
+        key: ValueKey(selectedEvent.id),
+        event: selectedEvent,
+      ),
+    ),
+  ),
           ],
         ),
       ),

@@ -44,7 +44,7 @@ class CustomDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = ThemeUtils.isDark(context);
-    final authNotifier = ref.read(authNotifierProvider.notifier);
+    ref.read(authNotifierProvider.notifier);
     final userAsync = ref.watch(authStateProvider);
 
     return Drawer(

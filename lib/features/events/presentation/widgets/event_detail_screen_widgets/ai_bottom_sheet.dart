@@ -58,20 +58,20 @@ class _AIBottomSheetState extends ConsumerState<AIBottomSheet>
 
   void _generateDescription() {
     ref.read(aiProvider.notifier).generateDescription(
-          title: widget.event.title ?? 'Event',
-          date: widget.event.formattedDate ?? '',
-          time: widget.event.formattedDayTime ?? '',
-          duration: widget.event.formattedDuration ?? '',
-          location: widget.event.location ?? '',
+          title: widget.event.title,
+          date: widget.event.formattedDate,
+          time: widget.event.formattedDayTime,
+          duration: widget.event.formattedDuration,
+          location: widget.event.location,
           existingDescription: widget.event.description,
         );
   }
 
   void _generateIdeas() {
     ref.read(aiProvider.notifier).generateIdeas(
-          title: widget.event.title ?? 'Event',
-          date: widget.event.formattedDate ?? '',
-          location: widget.event.location ?? '',
+          title: widget.event.title,
+          date: widget.event.formattedDate,
+          location: widget.event.location,
         );
   }
 

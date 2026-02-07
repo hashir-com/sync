@@ -31,7 +31,7 @@ class AIService {
         existingDescription: existingDescription,
       );
 
-      // ✅ Use models that are actually available
+      //  Use models that are actually available
       final modelNames = [
         'models/gemini-2.5-flash',
         'models/gemini-flash-latest',
@@ -85,7 +85,7 @@ class AIService {
             }
 
             final text = candidate['content']['parts'][0]['text'] as String;
-            print('✅ Success with $modelName! Generated ${text.length} characters');
+            print(' Success with $modelName! Generated ${text.length} characters');
             return text.trim();
           } else if (response.statusCode == 404) {
             print('⚠️ 404 for $modelName, trying next...');
@@ -181,7 +181,7 @@ Keep it concise and exciting (max 200 words). Do not use markdown formatting.
             }
 
             final text = data['candidates'][0]['content']['parts'][0]['text'] as String;
-            print('✅ Success! Generated ${text.length} characters');
+            print(' Success! Generated ${text.length} characters');
             return text.trim();
           } else if (response.statusCode == 404) {
             continue;

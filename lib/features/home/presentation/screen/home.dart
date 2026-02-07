@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flow_drawer/flow_drawer.dart';
@@ -57,6 +58,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    FirebaseAnalytics.instance.logEvent(
+  name: 'iam_test_event',
+);
+
     controller = FlowDrawerController();
   }
 

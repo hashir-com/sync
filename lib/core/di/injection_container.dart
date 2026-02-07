@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -65,7 +66,9 @@ final sl = GetIt.instance;
 Future<void> configureDependencies() async {
   // External
   final sharedPreferences = await SharedPreferences.getInstance();
-  print('Injection: Registering SharedPreferences');
+  if (kDebugMode) {
+    print('Injection: Registering SharedPreferences');
+  }
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
 
   final firebaseAuth = FirebaseAuth.instance;
