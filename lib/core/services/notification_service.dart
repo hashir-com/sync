@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sync_event/core/routes/routes.dart';
 
 class NotificationService {
   static final _firebaseMessaging = FirebaseMessaging.instance;
@@ -16,6 +17,14 @@ class NotificationService {
 
   /// Call this ONCE from main()
   static Future<void> init() async {
+
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+  final chatId = message.data['chatId'];
+  if (chatId != null) {
+    appRouter.go('/chat/$chatId');
+  }
+});
+
     // Android 13+ permission
     await _firebaseMessaging.requestPermission(
       alert: true,

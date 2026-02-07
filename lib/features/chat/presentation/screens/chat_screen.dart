@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:sync_event/core/constants/app_colors.dart';
 import 'package:sync_event/core/constants/app_sizes.dart';
@@ -123,7 +124,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               color: AppColors.getTextPrimary(isDark),
               size: AppSizes.iconMedium,
             ),
-            onPressed: () => Navigator.of(context).pop(),
+           onPressed: () {
+  if (context.canPop()) {
+    context.pop();
+  } else {
+    context.go('/'); // or your home route
+  }
+},
+
+
           ),
           title: otherUserAsync.when(
             data: (otherUser) => Row(

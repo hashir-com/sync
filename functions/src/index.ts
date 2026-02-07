@@ -257,3 +257,43 @@ export const sendCancellationEmailOnBookingCancel = onDocumentWritten(
     }
   }
 );
+
+
+/**
+ * Send push notification when a new chat message is created
+ */
+export const sendChatPushNotification = onDocumentCreated(
+  { document: "chats/{chatId}/messages/{messageId}" },
+  async (event) => {
+    const message = event.data?.data();
+    if (!message) return;
+
+    const { senderId, senderName, receiverId, text } = message;
+
+    if (!receiverId || senderId === receiverId) return;
+
+    const userSnap = await admin
+      .firestore()
+      .collection("users")
+      .doc(receiverId)
+      .get();
+
+    if (!userSnap.exists) return;
+
+    const fcmToken = userSnap.data()?.fcmToken;
+    if (!fcmToken) return;
+
+    await admin.messaging().send({
+      token: fcmToken,
+      notification: {
+        title: senderName ?? "New message",
+        body: text ?? "📩 New message",
+      },
+      data: {
+        type: "chat",
+        chatId: event.params.chatId,
+      },
+      android: { priority: "high" },
+    });
+  }
+);

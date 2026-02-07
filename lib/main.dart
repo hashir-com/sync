@@ -25,6 +25,16 @@ void main() async {
   firebaseMessagingBackgroundHandler,
 );
   await FirebaseInAppMessaging.instance.setMessagesSuppressed(false);
+  final initialMessage =
+    await FirebaseMessaging.instance.getInitialMessage();
+
+if (initialMessage != null) {
+  final chatId = initialMessage.data['chatId'];
+  if (chatId != null) {
+    appRouter.go('/chat/$chatId');
+  }
+}
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

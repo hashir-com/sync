@@ -130,10 +130,21 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     MessageType messageType = MessageType.text,
   }) async {
     try {
+
+      final chatDoc = await firestore.collection('chats').doc(chatId).get();
+      final chat = ChatModel.fromFirestore(chatDoc);
+      final otherUserId = chat.participants.firstWhere(
+        (id) => id != currentUserId,
+      );
+      final currentUser = await getCurrentUser();
+      final senderName = currentUser?.name ?? 'Someone';
+
       final message = MessageModel(
         id: '',
         chatId: chatId,
         senderId: currentUserId,
+        senderName: senderName,
+        receiverId: otherUserId, 
         text: text,
         imageUrl: imageUrl,
         timestamp: DateTime.now(),
@@ -141,16 +152,13 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       );
 
       await firestore
-          .collection('messages')
-          .doc(chatId)
-          .collection('messages')
-          .add(message.toFirestore());
+    .collection('chats')
+    .doc(chatId)
+    .collection('messages')
+    .add(message.toFirestore());
 
-      final chatDoc = await firestore.collection('chats').doc(chatId).get();
-      final chat = ChatModel.fromFirestore(chatDoc);
-      final otherUserId = chat.participants.firstWhere(
-        (id) => id != currentUserId,
-      );
+
+      
 
       await firestore.collection('chats').doc(chatId).update({
         'lastMessage': text.isEmpty ? '📷 Image' : text,
@@ -164,19 +172,20 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   }
 
   @override
-  Stream<List<MessageModel>> getChatMessages(String chatId) {
-    return firestore
-        .collection('messages')
-        .doc(chatId)
-        .collection('messages')
-        .orderBy('timestamp', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => MessageModel.fromFirestore(doc, chatId))
-              .toList(),
-        );
-  }
+Stream<List<MessageModel>> getChatMessages(String chatId) {
+  return firestore
+      .collection('chats')
+      .doc(chatId)
+      .collection('messages')
+      .orderBy('timestamp', descending: true)
+      .snapshots()
+      .map(
+        (snapshot) => snapshot.docs
+            .map((doc) => MessageModel.fromFirestore(doc, chatId))
+            .toList(),
+      );
+}
+
 
   @override
   Future<void> markMessagesAsRead(String chatId) async {
