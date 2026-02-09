@@ -223,14 +223,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
           ),
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.info_outline,
-                color: AppColors.getTextPrimary(isDark),
-                size: AppSizes.iconMedium,
-              ),
-              onPressed: () {},
-            ),
+            // IconButton(
+            //   icon: Icon(
+            //     Icons.info_outline,
+            //     color: AppColors.getTextPrimary(isDark),
+            //     size: AppSizes.iconMedium,
+            //   ),
+            //   onPressed: () {},
+            // ),
           ],
           backgroundColor: AppColors.getBackground(isDark),
           elevation: 0,
@@ -262,29 +262,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
                   if (messages.isEmpty) {
                     return Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(AppSizes.paddingXxl),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.chat_bubble_outline,
-                              size: AppSizes.imageLarge,
-                              color: AppColors.getTextSecondary(isDark),
-                            ),
-                            SizedBox(height: AppSizes.spacingLarge),
-                            Text(
-                              'No messages yet',
-                              style: AppTextStyles.titleLarge(
-                                isDark: isDark,
-                              ).copyWith(fontSize: AppSizes.fontXxxl),
-                            ),
-                            SizedBox(height: AppSizes.spacingXs),
-                            Text(
-                              'Start a conversation',
-                              style: AppTextStyles.bodySmall(isDark: isDark),
-                            ),
-                          ],
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: EdgeInsets.all(AppSizes.paddingXxl),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.chat_bubble_outline,
+                                size: AppSizes.imageSmall,
+                                color: AppColors.getTextSecondary(isDark),
+                              ),
+                              SizedBox(height: AppSizes.spacingLarge),
+                              Text(
+                                'No messages yet',
+                                style: AppTextStyles.titleLarge(
+                                  isDark: isDark,
+                                ).copyWith(fontSize: AppSizes.fontXxxl),
+                              ),
+                              SizedBox(height: AppSizes.spacingXs),
+                              Text(
+                                'Start a conversation',
+                                style: AppTextStyles.bodySmall(isDark: isDark),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );

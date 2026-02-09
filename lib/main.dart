@@ -24,7 +24,9 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(
   firebaseMessagingBackgroundHandler,
 );
-  await FirebaseInAppMessaging.instance.setMessagesSuppressed(false);
+   if (!kIsWeb) {
+    await FirebaseInAppMessaging.instance.setMessagesSuppressed(false);
+  }
   final initialMessage =
     await FirebaseMessaging.instance.getInitialMessage();
 
