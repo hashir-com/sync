@@ -70,14 +70,9 @@ android {
             )
         }
 
-<<<<<<< HEAD
         debug {
             // Debug builds don't need signing config for development
-=======
-        getByName("debug") {
-            // REMOVED: Don't use release signing for debug builds
-            // Debug builds will use the default debug signing automatically
->>>>>>> main
+
         }
     }
 }
