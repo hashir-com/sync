@@ -2020,7 +2020,7 @@ class EventSection extends ConsumerWidget {
               final sportEvents = events
                   .where(
                     (event) =>
-                        event.category.toLowerCase() == 'sports' ||
+                        event.category.toLowerCase() == 'sports' ||event.category.toLowerCase() == 't20 world cup 2026' ||
                         event.category.toLowerCase().contains('sport'),
                   )
                   .take(10)
@@ -2035,6 +2035,46 @@ class EventSection extends ConsumerWidget {
               }
 
               return SmallEventCardList(events: sportEvents, isDark: isDark);
+            },
+            loading: () => SmallCardShimmer(isDark: isDark),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+
+          SizedBox(height: AppSizes.spacingXl),
+
+          // 3. Movie EVENTS
+          SectionHeader(
+            title: 'Movie Events',
+            isDark: isDark,
+            onViewAll: () {
+              ref.read(eventFilterProvider.notifier).updateCategories([
+                'Movie',
+              ]);
+              context.push('/events');
+            },
+          ),
+          SizedBox(height: AppSizes.spacingLarge),
+
+          eventsAsync.when(
+            data: (events) {
+              final movieEvents = events
+                  .where(
+                    (event) =>
+                        event.category.toLowerCase() == 'movie' ||
+                        event.category.toLowerCase().contains('movie'),
+                  )
+                  .take(10)
+                  .toList();
+
+              if (movieEvents.isEmpty) {
+                return EmptyState(
+                  message: 'No movie events available',
+                  icon: Icons.movie_rounded,
+                  isDark: isDark,
+                );
+              }
+
+              return SmallEventCardList(events: movieEvents, isDark: isDark);
             },
             loading: () => SmallCardShimmer(isDark: isDark),
             error: (_, __) => const SizedBox.shrink(),

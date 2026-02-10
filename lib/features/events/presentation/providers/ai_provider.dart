@@ -1,7 +1,8 @@
+// ai_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sync_event/core/services/ai_services.dart';
 
-// State for AI generation
 class AIState {
   final bool isLoading;
   final String? generatedText;
@@ -26,7 +27,6 @@ class AIState {
   }
 }
 
-// AI Notifier
 class AINotifier extends StateNotifier<AIState> {
   AINotifier() : super(AIState());
 
@@ -38,7 +38,16 @@ class AINotifier extends StateNotifier<AIState> {
     required String location,
     String? existingDescription,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Please sign in to use AI features',
+      );
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, error: null, generatedText: null);
 
     try {
       final description = await AIService.generateEventDescription(
@@ -57,7 +66,7 @@ class AINotifier extends StateNotifier<AIState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: e.toString().replaceAll('Exception: ', ''),
       );
     }
   }
@@ -67,7 +76,16 @@ class AINotifier extends StateNotifier<AIState> {
     required String date,
     required String location,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Please sign in to use AI features',
+      );
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, error: null, generatedText: null);
 
     try {
       final ideas = await AIService.generateEventIdeas(
@@ -83,7 +101,7 @@ class AINotifier extends StateNotifier<AIState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: e.toString().replaceAll('Exception: ', ''),
       );
     }
   }
@@ -93,7 +111,6 @@ class AINotifier extends StateNotifier<AIState> {
   }
 }
 
-// Provider
 final aiProvider = StateNotifierProvider<AINotifier, AIState>((ref) {
   return AINotifier();
 });

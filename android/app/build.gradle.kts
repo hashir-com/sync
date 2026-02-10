@@ -46,7 +46,7 @@ android {
         create("release") {
             keyAlias = keystoreProperties.getProperty("keyAlias") ?: "upload"
             keyPassword = keystoreProperties.getProperty("keyPassword") ?: ""
-            storeFile = file(keystoreProperties.getProperty("storeFile") ?: "../upload-keystore.jks")
+            storeFile = file(keystoreProperties.getProperty("storeFile") ?: "upload-keystore.jks")
             storePassword = keystoreProperties.getProperty("storePassword") ?: ""
         }
     }

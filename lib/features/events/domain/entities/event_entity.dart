@@ -106,7 +106,7 @@ class EventEntity extends Equatable {
       createdAt: (json['createdAt'] as Timestamp).toDate(),
       updatedAt: (json['updatedAt'] as Timestamp).toDate(),
       ticketPrice: json['ticketPrice'] != null ? (json['ticketPrice'] as num).toDouble() : null,
-      status: json['status'],
+      status: json['status']??'pending',
       approvalReason: json['approvalReason'],
       rejectionReason: json['rejectionReason'],
       takenSeats: List<int>.from(json['takenSeats'] ?? []),
@@ -164,6 +164,10 @@ class EventEntity extends Equatable {
   String get locationSubtitle => location.contains(',') ? location.split(',').skip(1).join(',').trim() : 'Event location';
 
   bool get isExpired => DateTime.now().isAfter(endTime);
+
+  factory EventEntity.fromMap(Map<String, dynamic> map) {
+  return EventEntity.fromJson(map);
+}
 
 
 }

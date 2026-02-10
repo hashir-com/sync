@@ -13,7 +13,7 @@ import 'validators/edit_event_validator.dart';
 class EditEventScreen extends ConsumerStatefulWidget {
   final EventEntity event;
 
-  const EditEventScreen({super.key, required this.event});
+  const EditEventScreen({super.key, required this.event, String? eventId});
 
   @override
   ConsumerState<EditEventScreen> createState() => _EditEventScreenState();

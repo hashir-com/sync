@@ -605,6 +605,7 @@ class _AIBottomSheetState extends ConsumerState<AIBottomSheet>
   }
 
   Widget _buildErrorState(String error) {
+    debugPrint(error);
     return Expanded(
       child: Center(
         child: Column(
@@ -632,7 +633,7 @@ class _AIBottomSheetState extends ConsumerState<AIBottomSheet>
             Text(
               'Oops! Something went wrong',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: widget.isDark ? Colors.white : Colors.black87,
                 letterSpacing: -0.3,
@@ -644,7 +645,7 @@ class _AIBottomSheetState extends ConsumerState<AIBottomSheet>
               child: Text(
                 error,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 10,
                   color: (widget.isDark ? Colors.white : Colors.black).withOpacity(0.6),
                   height: 1.6,
                   letterSpacing: 0.1,
@@ -656,9 +657,11 @@ class _AIBottomSheetState extends ConsumerState<AIBottomSheet>
         ),
       ),
     );
+    
   }
 
   Widget _buildResultState(String text) {
+    debugPrint(text);
     return Expanded(
       child: Container(
         padding: EdgeInsets.all(20),
