@@ -55,6 +55,10 @@ class EditEventFormNotifier extends StateNotifier<EditEventFormData?> {
       existingDocumentUrl: event.documentUrl,
       latitude: event.latitude,
       longitude: event.longitude,
+
+       // Initialize from event or use defaults
+    categoryCapacities: event.categoryCapacities,
+    categoryPrices: event.categoryPrices 
     );
   }
 

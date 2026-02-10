@@ -1,32 +1,36 @@
+// ai_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sync_event/core/services/ai_services.dart';
 
-// State for AI generation
 class AIState {
   final bool isLoading;
-  final String? generatedText;
+  final String? descriptionText;  // New: For Description tab
+  final String? ideasText;        // New: For Ideas tab
   final String? error;
 
   AIState({
     this.isLoading = false,
-    this.generatedText,
+    this.descriptionText,
+    this.ideasText,
     this.error,
   });
 
   AIState copyWith({
     bool? isLoading,
-    String? generatedText,
+    String? descriptionText,
+    String? ideasText,
     String? error,
   }) {
     return AIState(
       isLoading: isLoading ?? this.isLoading,
-      generatedText: generatedText ?? this.generatedText,
+      descriptionText: descriptionText ?? this.descriptionText,
+      ideasText: ideasText ?? this.ideasText,
       error: error ?? this.error,
     );
   }
 }
 
-// AI Notifier
 class AINotifier extends StateNotifier<AIState> {
   AINotifier() : super(AIState());
 
@@ -38,6 +42,15 @@ class AINotifier extends StateNotifier<AIState> {
     required String location,
     String? existingDescription,
   }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Please sign in to use AI features',
+      );
+      return;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -52,12 +65,12 @@ class AINotifier extends StateNotifier<AIState> {
 
       state = state.copyWith(
         isLoading: false,
-        generatedText: description,
+        descriptionText: description,  // Set only description
       );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: e.toString().replaceAll('Exception: ', ''),
       );
     }
   }
@@ -67,6 +80,15 @@ class AINotifier extends StateNotifier<AIState> {
     required String date,
     required String location,
   }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Please sign in to use AI features',
+      );
+      return;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -78,12 +100,12 @@ class AINotifier extends StateNotifier<AIState> {
 
       state = state.copyWith(
         isLoading: false,
-        generatedText: ideas,
+        ideasText: ideas,  // Set only ideas
       );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: e.toString().replaceAll('Exception: ', ''),
       );
     }
   }
@@ -93,7 +115,6 @@ class AINotifier extends StateNotifier<AIState> {
   }
 }
 
-// Provider
 final aiProvider = StateNotifierProvider<AINotifier, AIState>((ref) {
   return AINotifier();
 });

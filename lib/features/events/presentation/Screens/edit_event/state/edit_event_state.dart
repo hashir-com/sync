@@ -16,6 +16,9 @@ class EditEventFormData {
   final double? latitude;
   final double? longitude;
 
+    final Map<String, int> categoryCapacities;
+  final Map<String, double> categoryPrices;
+
   EditEventFormData({
     required this.title,
     required this.description,
@@ -31,6 +34,9 @@ class EditEventFormData {
     this.existingDocumentUrl,
     this.latitude,
     this.longitude,
+
+        this.categoryCapacities = const {},
+    this.categoryPrices = const {},
   });
 
   EditEventFormData copyWith({
@@ -50,6 +56,9 @@ class EditEventFormData {
     double? longitude,
     bool clearCoverImage = false,
     bool clearDocument = false,
+
+    Map<String, int>? categoryCapacities,
+    Map<String, double>? categoryPrices,
   }) {
     return EditEventFormData(
       title: title ?? this.title,
@@ -66,6 +75,9 @@ class EditEventFormData {
       existingDocumentUrl: clearDocument ? null : (existingDocumentUrl ?? this.existingDocumentUrl),
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+
+      categoryCapacities: categoryCapacities ?? this.categoryCapacities,
+      categoryPrices: categoryPrices ?? this.categoryPrices,
     );
   }
 }

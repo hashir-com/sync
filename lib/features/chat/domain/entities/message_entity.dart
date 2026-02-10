@@ -6,6 +6,8 @@ class MessageEntity extends Equatable {
   final String id;
   final String chatId;
   final String senderId;
+  final String senderName;   
+  final String receiverId;
   final String text;
   final String? imageUrl;
   final DateTime timestamp;
@@ -16,6 +18,8 @@ class MessageEntity extends Equatable {
     required this.id,
     required this.chatId,
     required this.senderId,
+    required this.senderName,
+    required this.receiverId,
     required this.text,
     this.imageUrl,
     required this.timestamp,
@@ -24,5 +28,5 @@ class MessageEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, chatId, senderId, text, imageUrl, timestamp, isRead, messageType];
+  List<Object?> get props => [id, chatId, senderId, senderName, receiverId, text, imageUrl, timestamp, isRead, messageType];
 }

@@ -81,7 +81,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
   void _handleFailure(Failure failure) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message ?? 'An error occurred')),
+        SnackBar(content: Text(failure.message)),
       );
       setState(() => _isLoadingProfile = false);
       // Clear any previously picked image on failure as well
