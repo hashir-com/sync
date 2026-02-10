@@ -22,14 +22,24 @@ class AIService {
           .httpsCallable('generateEventDescription');
 
       final prompt = '''
-Write a professional, engaging event description.
+You are an expert event copywriter. Output ONLY the event description (250-350 words). NO intros like "Of course" or "Here is". NO markdown like #, **, or *. Use plain text only.
 
+Write a warm, exciting, readable description with:
+- Short paragraphs
+- Friendly tone
+- Emojis where natural (max 4-5)
+- Storytelling style
+- Strong Call-to-Action at end
+
+Details:
 Title: $title
 Date: $date
 Time: $time
 Duration: $duration
 Location: $location
-${existingDescription != null ? 'Existing description: $existingDescription' : ''}
+${existingDescription != null ? 'Improve existing (no repeat): $existingDescription' : ''}
+
+Start directly with the description.
 ''';
 
 final result = await callable.call({

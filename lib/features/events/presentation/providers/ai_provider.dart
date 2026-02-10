@@ -5,23 +5,27 @@ import 'package:sync_event/core/services/ai_services.dart';
 
 class AIState {
   final bool isLoading;
-  final String? generatedText;
+  final String? descriptionText;  // New: For Description tab
+  final String? ideasText;        // New: For Ideas tab
   final String? error;
 
   AIState({
     this.isLoading = false,
-    this.generatedText,
+    this.descriptionText,
+    this.ideasText,
     this.error,
   });
 
   AIState copyWith({
     bool? isLoading,
-    String? generatedText,
+    String? descriptionText,
+    String? ideasText,
     String? error,
   }) {
     return AIState(
       isLoading: isLoading ?? this.isLoading,
-      generatedText: generatedText ?? this.generatedText,
+      descriptionText: descriptionText ?? this.descriptionText,
+      ideasText: ideasText ?? this.ideasText,
       error: error ?? this.error,
     );
   }
@@ -47,7 +51,7 @@ class AINotifier extends StateNotifier<AIState> {
       return;
     }
 
-    state = state.copyWith(isLoading: true, error: null, generatedText: null);
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
       final description = await AIService.generateEventDescription(
@@ -61,7 +65,7 @@ class AINotifier extends StateNotifier<AIState> {
 
       state = state.copyWith(
         isLoading: false,
-        generatedText: description,
+        descriptionText: description,  // Set only description
       );
     } catch (e) {
       state = state.copyWith(
@@ -85,7 +89,7 @@ class AINotifier extends StateNotifier<AIState> {
       return;
     }
 
-    state = state.copyWith(isLoading: true, error: null, generatedText: null);
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
       final ideas = await AIService.generateEventIdeas(
@@ -96,7 +100,7 @@ class AINotifier extends StateNotifier<AIState> {
 
       state = state.copyWith(
         isLoading: false,
-        generatedText: ideas,
+        ideasText: ideas,  // Set only ideas
       );
     } catch (e) {
       state = state.copyWith(

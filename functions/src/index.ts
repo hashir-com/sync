@@ -401,13 +401,17 @@ export const generateEventIdeas = onCall(async (request) => {
       model: "gemini-2.5-pro",
     });
 
-    const prompt = `Generate creative and innovative ideas for this event:
+    const prompt = `You are a creative event planner. Output ONLY 7 ideas as plain text numbered list (1. Idea title: Description). NO intros. NO markdown like #, **, or *. NO "Why this will make it special". Use emojis in titles if natural.
 
-Event Title: ${data.title}
+Each idea: 2-4 sentences, fun, modern, easy to execute (activities, themes, etc.).
+
+Event:
+Title: ${data.title}
 Date: ${data.date}
 Location: ${data.location}
 
-Please provide 5-7 engaging suggestions to make this event memorable and successful. Include ideas for activities, themes, engagement strategies, or unique elements.`;
+Start directly with "1. ".
+`;
 
     const result = await model.generateContent({
       contents: [

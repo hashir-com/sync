@@ -430,8 +430,8 @@ class _AIBottomSheetState extends ConsumerState<AIBottomSheet>
             _buildLoadingState()
           else if (aiState.error != null)
             _buildErrorState(aiState.error!)
-          else if (aiState.generatedText != null)
-            _buildResultState(aiState.generatedText!)
+          else if (aiState.descriptionText != null)
+            _buildResultState(aiState.descriptionText!)
           else
             _buildInitialState(
               icon: Icons.auto_awesome_mosaic_rounded,
@@ -442,7 +442,7 @@ class _AIBottomSheetState extends ConsumerState<AIBottomSheet>
           _buildGradientButton(
             onPressed: aiState.isLoading ? null : _generateDescription,
             icon: Icons.auto_awesome_rounded,
-            label: aiState.generatedText == null ? 'Generate Description' : 'Regenerate',
+           label: aiState.descriptionText == null ? 'Generate Description' : 'Regenerate',
             gradient: LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
           ),
         ],
@@ -465,8 +465,8 @@ class _AIBottomSheetState extends ConsumerState<AIBottomSheet>
             _buildLoadingState()
           else if (aiState.error != null)
             _buildErrorState(aiState.error!)
-          else if (aiState.generatedText != null)
-            _buildResultState(aiState.generatedText!)
+          else if (aiState.ideasText != null)
+            _buildResultState(aiState.ideasText!)
           else
             _buildInitialState(
               icon: Icons.emoji_objects_rounded,
@@ -477,7 +477,7 @@ class _AIBottomSheetState extends ConsumerState<AIBottomSheet>
           _buildGradientButton(
             onPressed: aiState.isLoading ? null : _generateIdeas,
             icon: Icons.lightbulb_rounded,
-            label: aiState.generatedText == null ? 'Get Ideas' : 'Get More Ideas',
+            label: aiState.ideasText == null ? 'Get Ideas' : 'Get More Ideas',
             gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)]),
           ),
         ],
