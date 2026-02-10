@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:sync_event/core/constants/app_colors.dart';
 import 'package:sync_event/core/constants/app_sizes.dart';
@@ -111,148 +112,155 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ? ref.watch(typingProvider((widget.chatId, otherUserId)))
         : const AsyncValue.data(false);
 
-    return SafeArea(
-      bottom: true,
-      child: Scaffold(
-        backgroundColor: AppColors.getBackground(isDark),
-        appBar: AppBar(
-          leadingWidth: AppSizes.paddingMedium * 2,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios,
-              color: AppColors.getTextPrimary(isDark),
-              size: AppSizes.iconMedium,
-            ),
-            onPressed: () => Navigator.of(context).pop(),
+    return Scaffold(
+      backgroundColor: AppColors.getBackground(isDark),
+      appBar: AppBar(
+        leadingWidth: AppSizes.paddingMedium * 2,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.getTextPrimary(isDark),
+            size: AppSizes.iconMedium,
           ),
-          title: otherUserAsync.when(
-            data: (otherUser) => Row(
-              children: [
-                CircleAvatar(
-                  radius: AppSizes.avatarMedium / 2,
-                  backgroundImage: otherUser?.image != null
-                      ? NetworkImage(otherUser!.image!)
-                      : null,
-                  backgroundColor: AppColors.grey300,
-                  child: otherUser?.image == null
-                      ? Icon(
-                          Icons.person,
-                          color: AppColors.grey600,
-                          size: AppSizes.iconSmall,
-                        )
-                      : null,
-                ),
-                SizedBox(width: AppSizes.spacingSmall),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        otherUser?.name ?? 'Unknown User',
-                        style: AppTextStyles.titleMedium(
-                          isDark: isDark,
-                        ).copyWith(fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Builder(
-                        builder: (context) {
-                          final isTyping = typingValue.when(
-                            data: (value) => value,
-                            loading: () => false,
-                            error: (_, __) => false,
-                          );
-                          return Text(
-                            isTyping ? 'Typing...' : 'Active now',
-                            style: TextStyle(
-                              color: isTyping
-                                  ? const Color(0xFF0095F6)
-                                  : AppColors.getTextSecondary(isDark),
-                              fontSize: AppSizes.fontSmall,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            loading: () => Row(
-              children: [
-                CircleAvatar(
-                  radius: AppSizes.avatarMedium / 2,
-                  backgroundColor: AppColors.grey300,
-                ),
-                SizedBox(width: AppSizes.spacingSmall),
-                Container(
-                  width: 100,
-                  height: AppSizes.fontMedium * 1.5,
-                  decoration: BoxDecoration(
-                    color: AppColors.grey300,
-                    borderRadius: BorderRadius.circular(AppSizes.radiusXs),
-                  ),
-                ),
-              ],
-            ),
-            error: (_, __) => Row(
-              children: [
-                CircleAvatar(
-                  radius: AppSizes.avatarMedium / 2,
-                  backgroundColor: AppColors.grey300,
-                  child: Icon(Icons.person, size: AppSizes.iconSmall),
-                ),
-                SizedBox(width: AppSizes.spacingSmall),
-                Text(
-                  'Chat',
-                  style: AppTextStyles.titleMedium(
-                    isDark: isDark,
-                  ).copyWith(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                Icons.info_outline,
-                color: AppColors.getTextPrimary(isDark),
-                size: AppSizes.iconMedium,
+         onPressed: () {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/'); // or your home route
+      }
+    },
+    
+    
+        ),
+        title: otherUserAsync.when(
+          data: (otherUser) => Row(
+            children: [
+              CircleAvatar(
+                radius: AppSizes.avatarMedium / 2,
+                backgroundImage: otherUser?.image != null
+                    ? NetworkImage(otherUser!.image!)
+                    : null,
+                backgroundColor: AppColors.grey300,
+                child: otherUser?.image == null
+                    ? Icon(
+                        Icons.person,
+                        color: AppColors.grey600,
+                        size: AppSizes.iconSmall,
+                      )
+                    : null,
               ),
-              onPressed: () {},
-            ),
-          ],
-          backgroundColor: AppColors.getBackground(isDark),
-          elevation: 0,
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(1),
-            child: Container(color: AppColors.getBorder(isDark), height: 0.5),
+              SizedBox(width: AppSizes.spacingSmall),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      otherUser?.name ?? 'Unknown User',
+                      style: AppTextStyles.titleMedium(
+                        isDark: isDark,
+                      ).copyWith(fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Builder(
+                      builder: (context) {
+                        final isTyping = typingValue.when(
+                          data: (value) => value,
+                          loading: () => false,
+                          error: (_, __) => false,
+                        );
+                        return Text(
+                          isTyping ? 'Typing...' : 'Active now',
+                          style: TextStyle(
+                            color: isTyping
+                                ? const Color(0xFF0095F6)
+                                : AppColors.getTextSecondary(isDark),
+                            fontSize: AppSizes.fontSmall,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          loading: () => Row(
+            children: [
+              CircleAvatar(
+                radius: AppSizes.avatarMedium / 2,
+                backgroundColor: AppColors.grey300,
+              ),
+              SizedBox(width: AppSizes.spacingSmall),
+              Container(
+                width: 100,
+                height: AppSizes.fontMedium * 1.5,
+                decoration: BoxDecoration(
+                  color: AppColors.grey300,
+                  borderRadius: BorderRadius.circular(AppSizes.radiusXs),
+                ),
+              ),
+            ],
+          ),
+          error: (_, __) => Row(
+            children: [
+              CircleAvatar(
+                radius: AppSizes.avatarMedium / 2,
+                backgroundColor: AppColors.grey300,
+                child: Icon(Icons.person, size: AppSizes.iconSmall),
+              ),
+              SizedBox(width: AppSizes.spacingSmall),
+              Text(
+                'Chat',
+                style: AppTextStyles.titleMedium(
+                  isDark: isDark,
+                ).copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
         ),
-        body: Column(
-          children: [
-            Expanded(
-              child: messagesAsync.when(
-                data: (messages) {
-                  final currentCount = messages.length;
-                  if (currentCount > _previousMessageCount) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (_scrollController.hasClients) {
-                        if (_scrollController.position.pixels < 100) {
-                          _scrollController.animateTo(
-                            0,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeOut,
-                          );
-                        }
+        actions: [
+          // IconButton(
+          //   icon: Icon(
+          //     Icons.info_outline,
+          //     color: AppColors.getTextPrimary(isDark),
+          //     size: AppSizes.iconMedium,
+          //   ),
+          //   onPressed: () {},
+          // ),
+        ],
+        backgroundColor: AppColors.getBackground(isDark),
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: AppColors.getBorder(isDark), height: 0.5),
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: messagesAsync.when(
+              data: (messages) {
+                final currentCount = messages.length;
+                if (currentCount > _previousMessageCount) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                      if (_scrollController.position.pixels < 100) {
+                        _scrollController.animateTo(
+                          0,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut,
+                        );
                       }
-                    });
-                  }
-                  _previousMessageCount = currentCount;
-
-                  if (messages.isEmpty) {
-                    return Center(
+                    }
+                  });
+                }
+                _previousMessageCount = currentCount;
+    
+                if (messages.isEmpty) {
+                  return Center(
+                    child: SingleChildScrollView(
                       child: Padding(
                         padding: EdgeInsets.all(AppSizes.paddingXxl),
                         child: Column(
@@ -260,7 +268,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           children: [
                             Icon(
                               Icons.chat_bubble_outline,
-                              size: AppSizes.imageLarge,
+                              size: AppSizes.imageSmall,
                               color: AppColors.getTextSecondary(isDark),
                             ),
                             SizedBox(height: AppSizes.spacingLarge),
@@ -278,189 +286,189 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ],
                         ),
                       ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    controller: _scrollController,
-                    reverse: true,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppSizes.paddingMedium,
-                      vertical: AppSizes.spacingSmall,
                     ),
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final message = messages[index];
-                      final isMe = message.senderId == currentUserId;
-                      final showDate =
-                          index == messages.length - 1 ||
-                          !_isSameDay(
-                            message.timestamp,
-                            messages[index + 1].timestamp,
-                          );
-
-                      // Check if we should show avatar (last in consecutive group)
-                      final showAvatar =
-                          index == 0 ||
-                          messages[index - 1].senderId != message.senderId ||
-                          !_isWithinTimeWindow(
-                            messages[index - 1].timestamp,
-                            message.timestamp,
-                          );
-
-                      return Column(
-                        children: [
-                          if (showDate)
-                            _buildDateDivider(message.timestamp, isDark),
-                          _buildMessageBubble(
-                            message,
-                            isMe,
-                            isDark,
-                            showAvatar,
-                            otherUserAsync,
-                          ),
-                        ],
-                      );
-                    },
                   );
-                },
-                loading: () => Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: AppSizes.borderWidthThin,
-                    color: AppColors.getTextPrimary(isDark),
+                }
+    
+                return ListView.builder(
+                  controller: _scrollController,
+                  reverse: true,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSizes.paddingMedium,
+                    vertical: AppSizes.spacingSmall,
                   ),
-                ),
-                error: (error, stack) => Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(AppSizes.paddingXxl),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[index];
+                    final isMe = message.senderId == currentUserId;
+                    final showDate =
+                        index == messages.length - 1 ||
+                        !_isSameDay(
+                          message.timestamp,
+                          messages[index + 1].timestamp,
+                        );
+    
+                    // Check if we should show avatar (last in consecutive group)
+                    final showAvatar =
+                        index == 0 ||
+                        messages[index - 1].senderId != message.senderId ||
+                        !_isWithinTimeWindow(
+                          messages[index - 1].timestamp,
+                          message.timestamp,
+                        );
+    
+                    return Column(
                       children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: AppSizes.imageLarge,
-                          color: AppColors.getError(isDark),
-                        ),
-                        SizedBox(height: AppSizes.spacingLarge),
-                        Text(
-                          'Something went wrong',
-                          style: AppTextStyles.titleLarge(isDark: isDark),
-                        ),
-                        SizedBox(height: AppSizes.spacingXs),
-                        Text(
-                          'Failed to load messages',
-                          style: AppTextStyles.bodyMedium(isDark: isDark),
-                        ),
-                        SizedBox(height: AppSizes.paddingXxl),
-                        TextButton(
-                          onPressed: () => ref.invalidate(
-                            chatMessagesStreamProvider(widget.chatId),
-                          ),
-                          child: Text(
-                            'Retry',
-                            style: AppTextStyles.titleSmall(
-                              isDark: isDark,
-                            ).copyWith(fontWeight: FontWeight.w600),
-                          ),
+                        if (showDate)
+                          _buildDateDivider(message.timestamp, isDark),
+                        _buildMessageBubble(
+                          message,
+                          isMe,
+                          isDark,
+                          showAvatar,
+                          otherUserAsync,
                         ),
                       ],
-                    ),
+                    );
+                  },
+                );
+              },
+              loading: () => Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: AppSizes.borderWidthThin,
+                  color: AppColors.getTextPrimary(isDark),
+                ),
+              ),
+              error: (error, stack) => Center(
+                child: Padding(
+                  padding: EdgeInsets.all(AppSizes.paddingXxl),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: AppSizes.imageLarge,
+                        color: AppColors.getError(isDark),
+                      ),
+                      SizedBox(height: AppSizes.spacingLarge),
+                      Text(
+                        'Something went wrong',
+                        style: AppTextStyles.titleLarge(isDark: isDark),
+                      ),
+                      SizedBox(height: AppSizes.spacingXs),
+                      Text(
+                        'Failed to load messages',
+                        style: AppTextStyles.bodyMedium(isDark: isDark),
+                      ),
+                      SizedBox(height: AppSizes.paddingXxl),
+                      TextButton(
+                        onPressed: () => ref.invalidate(
+                          chatMessagesStreamProvider(widget.chatId),
+                        ),
+                        child: Text(
+                          'Retry',
+                          style: AppTextStyles.titleSmall(
+                            isDark: isDark,
+                          ).copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSizes.paddingMedium,
-                vertical: AppSizes.paddingMedium,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.getBackground(isDark),
-                border: Border(
-                  top: BorderSide(
-                    color: AppColors.getBorder(isDark),
-                    width: 0.5,
-                  ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSizes.paddingMedium,
+              vertical: AppSizes.paddingMedium,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.getBackground(isDark),
+              border: Border(
+                top: BorderSide(
+                  color: AppColors.getBorder(isDark),
+                  width: 0.5,
                 ),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxHeight: 120),
-                      child: TextField(
-                        controller: _messageController,
-                        decoration: InputDecoration(
-                          hintText: 'Message...',
-                          hintStyle: AppTextStyles.caption(isDark: isDark),
-                          filled: true,
-                          fillColor: AppColors.getSurface(isDark),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: AppSizes.inputPaddingHorizontal,
-                            vertical: AppSizes.paddingMedium,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: 120),
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Message...',
+                        hintStyle: AppTextStyles.caption(isDark: isDark),
+                        filled: true,
+                        fillColor: AppColors.getSurface(isDark),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: AppSizes.inputPaddingHorizontal,
+                          vertical: AppSizes.paddingMedium,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSizes.radiusRound,
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppSizes.radiusRound,
-                            ),
-                            borderSide: const BorderSide(
-                              color: Colors.transparent,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppSizes.radiusRound,
-                            ),
-                            borderSide: BorderSide(
-                              color: AppColors.getBorder(isDark),
-                              width: AppSizes.inputBorderWidth,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppSizes.radiusRound,
-                            ),
-                            borderSide: BorderSide(
-                              color: const Color(0xFF0095F6),
-                              width: AppSizes.inputBorderWidthFocused,
-                            ),
+                          borderSide: const BorderSide(
+                            color: Colors.transparent,
                           ),
                         ),
-                        style: AppTextStyles.bodyMedium(
-                          isDark: isDark,
-                        ).copyWith(fontWeight: FontWeight.normal),
-                        maxLines: 5,
-                        minLines: 1,
-                        textInputAction: TextInputAction.newline,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSizes.radiusRound,
+                          ),
+                          borderSide: BorderSide(
+                            color: AppColors.getBorder(isDark),
+                            width: AppSizes.inputBorderWidth,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSizes.radiusRound,
+                          ),
+                          borderSide: BorderSide(
+                            color: const Color(0xFF0095F6),
+                            width: AppSizes.inputBorderWidthFocused,
+                          ),
+                        ),
                       ),
+                      style: AppTextStyles.bodyMedium(
+                        isDark: isDark,
+                      ).copyWith(fontWeight: FontWeight.normal),
+                      maxLines: 5,
+                      minLines: 1,
+                      textInputAction: TextInputAction.newline,
                     ),
                   ),
-                  SizedBox(width: AppSizes.spacingSmall),
-                  GestureDetector(
-                    onTap: _sendMessage,
-                    child: Container(
-                      padding: EdgeInsets.all(AppSizes.paddingMedium),
-                      decoration: BoxDecoration(
-                        color: _messageController.text.trim().isNotEmpty
-                            ? const Color(0xFF0095F6)
-                            : AppColors.getSurface(isDark),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.send,
-                        color: _messageController.text.trim().isNotEmpty
-                            ? Colors.white
-                            : AppColors.getTextSecondary(isDark),
-                        size: AppSizes.iconSmall,
-                      ),
+                ),
+                SizedBox(width: AppSizes.spacingSmall),
+                GestureDetector(
+                  onTap: _sendMessage,
+                  child: Container(
+                    padding: EdgeInsets.all(AppSizes.paddingMedium),
+                    decoration: BoxDecoration(
+                      color: _messageController.text.trim().isNotEmpty
+                          ? const Color(0xFF0095F6)
+                          : AppColors.getSurface(isDark),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.send,
+                      color: _messageController.text.trim().isNotEmpty
+                          ? Colors.white
+                          : AppColors.getTextSecondary(isDark),
+                      size: AppSizes.iconSmall,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

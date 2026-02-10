@@ -13,7 +13,7 @@ import 'validators/edit_event_validator.dart';
 class EditEventScreen extends ConsumerStatefulWidget {
   final EventEntity event;
 
-  const EditEventScreen({super.key, required this.event});
+  const EditEventScreen({super.key, required this.event, String? eventId});
 
   @override
   ConsumerState<EditEventScreen> createState() => _EditEventScreenState();
@@ -91,29 +91,40 @@ class _EditEventScreenState extends ConsumerState<EditEventScreen> {
     }
 
     // Create updated event
-    final updatedEvent = EventEntity(
-      id: widget.event.id,
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      location: formData.location.trim(),
-      startTime: formData.startTime!,
-      endTime: formData.endTime!,
-      organizerId: widget.event.organizerId,
-      organizerName: widget.event.organizerName,
-      attendees: widget.event.attendees,
-      maxAttendees: formData.maxAttendees,
-      category: formData.category,
-      latitude: formData.latitude ?? widget.event.latitude,
-      longitude: formData.longitude ?? widget.event.longitude,
-      createdAt: widget.event.createdAt,
-      updatedAt: DateTime.now(),
-      ticketPrice: formData.ticketPrice,
-      imageUrl: formData.existingImageUrl,
-      documentUrl: formData.existingDocumentUrl,
-      status: 'pending',
-      approvalReason: null,
-      rejectionReason: null, availableTickets: 0,
-    );
+   final updatedEvent = widget.event.copyWith(
+  title: formData.title.trim(),
+  description: formData.description.trim(),
+  location: formData.location.trim(),
+
+  startTime: formData.startTime,
+  endTime: formData.endTime,
+
+  latitude: formData.latitude,
+  longitude: formData.longitude,
+
+  maxAttendees: formData.maxAttendees,
+  category: formData.category,
+
+  ticketPrice: formData.ticketPrice,
+
+  // 🔑 THESE WERE MISSING
+  categoryCapacities: formData.categoryCapacities,
+  categoryPrices: formData.categoryPrices,
+
+  // 🔑 PRESERVE THESE
+  imageUrl: widget.event.imageUrl,
+  documentUrl: widget.event.documentUrl,
+  attendees: widget.event.attendees,
+  availableTickets: widget.event.availableTickets,
+
+  status: 'pending',
+  approvalReason: widget.event.approvalReason,
+  rejectionReason: widget.event.rejectionReason,
+
+  updatedAt: DateTime.now(),
+);
+
+
 
     // Submit update
     await ref

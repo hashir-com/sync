@@ -106,7 +106,7 @@ class EventEntity extends Equatable {
       createdAt: (json['createdAt'] as Timestamp).toDate(),
       updatedAt: (json['updatedAt'] as Timestamp).toDate(),
       ticketPrice: json['ticketPrice'] != null ? (json['ticketPrice'] as num).toDouble() : null,
-      status: json['status'],
+      status: json['status']??'pending',
       approvalReason: json['approvalReason'],
       rejectionReason: json['rejectionReason'],
       takenSeats: List<int>.from(json['takenSeats'] ?? []),
@@ -164,6 +164,63 @@ class EventEntity extends Equatable {
   String get locationSubtitle => location.contains(',') ? location.split(',').skip(1).join(',').trim() : 'Event location';
 
   bool get isExpired => DateTime.now().isAfter(endTime);
+
+  factory EventEntity.fromMap(Map<String, dynamic> map) {
+  return EventEntity.fromJson(map);
+}
+
+
+EventEntity copyWith({
+  String? title,
+  String? description,
+  String? location,
+  double? latitude,
+  double? longitude,
+  DateTime? startTime,
+  DateTime? endTime,
+  String? imageUrl,
+  String? documentUrl,
+  List<String>? attendees,
+  int? maxAttendees,
+  String? category,
+  double? ticketPrice,
+  String? status,
+  String? approvalReason,
+  String? rejectionReason,
+  Map<String, int>? categoryCapacities,
+  Map<String, double>? categoryPrices,
+  List<int>? takenSeats,
+  int? availableTickets,
+  DateTime? updatedAt,
+}) {
+  return EventEntity(
+    id: id,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    location: location ?? this.location,
+    latitude: latitude ?? this.latitude,
+    longitude: longitude ?? this.longitude,
+    startTime: startTime ?? this.startTime,
+    endTime: endTime ?? this.endTime,
+    imageUrl: imageUrl ?? this.imageUrl,
+    documentUrl: documentUrl ?? this.documentUrl,
+    organizerId: organizerId,
+    organizerName: organizerName,
+    attendees: attendees ?? this.attendees,
+    maxAttendees: maxAttendees ?? this.maxAttendees,
+    category: category ?? this.category,
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? DateTime.now(),
+    ticketPrice: ticketPrice ?? this.ticketPrice,
+    status: status ?? this.status,
+    approvalReason: approvalReason ?? this.approvalReason,
+    rejectionReason: rejectionReason ?? this.rejectionReason,
+    categoryCapacities: categoryCapacities ?? this.categoryCapacities,
+    categoryPrices: categoryPrices ?? this.categoryPrices,
+    takenSeats: takenSeats ?? this.takenSeats,
+    availableTickets: availableTickets ?? this.availableTickets,
+  );
+}
 
 
 }

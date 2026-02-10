@@ -6,6 +6,7 @@ import 'package:sync_event/core/constants/app_colors.dart';
 import 'package:sync_event/core/constants/app_sizes.dart';
 import 'package:sync_event/core/constants/app_text_styles.dart';
 import 'package:sync_event/core/constants/app_theme.dart';
+import 'package:sync_event/core/util/responsive_util.dart';
 import 'package:sync_event/features/chat/domain/entities/chat_user_entity.dart';
 import 'package:sync_event/features/chat/presentation/providers/chat_providers.dart';
 import 'package:sync_event/features/chat/presentation/widgets/user_search_tile.dart';
@@ -108,6 +109,14 @@ class _UserSearchScreenState extends ConsumerState<UserSearchScreen>
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDark),
       appBar: AppBar(
+        leading:  IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.getTextPrimary(isDark),
+            size: ResponsiveUtil.getIconSize(context, baseSize: 20),
+          ),
+          onPressed: () => context.pop(),
+        ),
         foregroundColor: AppColors.getPrimary(isDark),
         backgroundColor: AppColors.getBackground(isDark),
         elevation: 0,

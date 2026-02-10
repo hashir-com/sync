@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -87,38 +88,57 @@ class EditCoverTile extends ConsumerWidget {
       label: hasImage ? 'Cover Selected' : 'Add Cover photo',
       iconColor: AppColors.success,
       isRequired: true,
-      trailing: hasImage
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (formData.newCoverImage != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
-                    child: Image.file(
-                      formData.newCoverImage!,
-                      width: AppSizes.avatarMedium,
-                      height: AppSizes.avatarMedium,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                SizedBox(width: AppSizes.spacingSmall),
-                IconButton(
-                  icon: Icon(
-                    Icons.close_rounded,
-                    color: AppColors.getError(isDark),
-                  ),
-                  onPressed: () {
-                    ref
-                        .read(editEventFormProvider.notifier)
-                        .updateFormData(
-                          formData.copyWith(clearCoverImage: true),
-                        );
-                  },
-                  iconSize: AppSizes.iconSmall,
-                ),
-              ],
+     trailing: hasImage
+    ? Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 🔑 NEW IMAGE PREVIEW
+          if (formData.newCoverImage != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+              child: Image.file(
+                formData.newCoverImage!,
+                width: AppSizes.avatarMedium,
+                height: AppSizes.avatarMedium,
+                fit: BoxFit.cover,
+              ),
             )
-          : null,
+
+          // 🔑 EXISTING IMAGE PREVIEW (THIS WAS MISSING)
+          else if (formData.existingImageUrl != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+              child: Image.network(
+                formData.existingImageUrl!,
+                width: AppSizes.avatarMedium,
+                height: AppSizes.avatarMedium,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Icon(
+                  Icons.broken_image,
+                  size: AppSizes.avatarMedium,
+                ),
+              ),
+            ),
+
+          SizedBox(width: AppSizes.spacingSmall),
+
+          // Remove image button
+          IconButton(
+            icon: Icon(
+              Icons.close_rounded,
+              color: AppColors.getError(isDark),
+            ),
+            onPressed: () {
+              ref
+                  .read(editEventFormProvider.notifier)
+                  .updateFormData(formData.copyWith(clearCoverImage: true));
+            },
+            iconSize: AppSizes.iconSmall,
+          ),
+        ],
+      )
+    : null,
+
       onTap: () => _pickImage(ref),
     );
   }
@@ -243,15 +263,30 @@ class EditCapacityTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    String label;
+    final allUnlimited =
+        (formData.categoryCapacities['vip'] ?? 0) >= 99999 &&
+        (formData.categoryCapacities['premium'] ?? 0) >= 99999 &&
+        (formData.categoryCapacities['regular'] ?? 0) >= 99999;
+
+    if (allUnlimited) {
+      label = 'Open Capacity';
+    } else {
+      final total = formData.maxAttendees;
+      label = total <= 0 ? 'Max Attendees' : 'Max: $total attendees';
+    }
+
     return EditEventOptionTile(
       icon: Icons.people_outline_rounded,
-      label: formData.maxAttendees <= 0
-          ? 'Max Attendees'
-          : 'Max: ${formData.maxAttendees} attendees',
+      label: label,
       iconColor: AppColors.warning,
       isRequired: true,
-      onTap: () =>
-          EditCapacityDialog.show(context, ref, formData, minAttendees),
+      onTap: () => EditCapacityByCategoryDialog.show(
+        context,
+        ref,
+        formData,
+        minAttendees,
+      ),
     );
   }
 }
@@ -263,16 +298,20 @@ class EditPriceTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final price = formData.ticketPrice ?? 0;
+    final prices = formData.categoryPrices.values.where((p) => p > 0).toList();
+    final minPrice = prices.isNotEmpty ? prices.reduce(math.min) : null;
+    final allFree = formData.categoryPrices.values.every((p) => p == 0);
 
     return EditEventOptionTile(
       icon: Icons.confirmation_number_outlined,
-      label: price == 0
+      label: allFree
           ? 'Free Event'
-          : 'Starting from ₹${price.toStringAsFixed(2)}',
+          : (minPrice == null
+              ? 'Add Ticket Pricing'
+              : 'Starting from ₹${minPrice.toStringAsFixed(2)}'),
       iconColor: AppColors.warning,
       isRequired: true,
-      onTap: () => EditPriceDialog.show(context, ref, formData),
+      onTap: () => EditPriceByCategoryDialog.show(context, ref, formData),
     );
   }
 }

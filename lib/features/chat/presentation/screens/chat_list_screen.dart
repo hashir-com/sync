@@ -21,6 +21,14 @@ class ChatListScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDark),
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.getTextPrimary(isDark),
+            size: ResponsiveUtil.getIconSize(context, baseSize: 20),
+          ),
+          onPressed: () => context.pop(),
+        ),
         title: Text(
           'Messages',
           style: AppTextStyles.titleLarge(isDark: isDark).copyWith(

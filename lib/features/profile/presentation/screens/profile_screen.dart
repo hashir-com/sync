@@ -2,14 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sync_event/core/constants/app_colors.dart';
-import 'package:sync_event/core/constants/app_sizes.dart';
 import 'package:sync_event/core/constants/app_text_styles.dart';
-import 'package:sync_event/core/di/injection_container.dart';
 import 'package:sync_event/core/util/responsive_util.dart';
 import 'package:sync_event/core/util/theme_util.dart';
+import 'package:sync_event/features/events/domain/entities/event_entity.dart';
 import 'package:sync_event/features/events/presentation/providers/event_providers.dart'; // For deleteEventUseCaseProvider
 import 'package:sync_event/features/profile/presentation/providers/profile_providers.dart';
 import 'package:sync_event/features/profile/domain/usecases/create_user_usecase.dart'; // For CreateProfileParams and provider
@@ -544,7 +542,11 @@ class ProfileScreenState extends ConsumerState<ProfileScreen> {
                 onDelete: isSelf
                     ? () => _showDeleteDialog(context, ref, eventData)
                     : null,
-                onTap: () => context.push('/event-detail', extra: eventData),
+                onTap: () {
+  final event = EventEntity.fromMap(eventData);
+  context.push('/event-detail', extra: event);
+},
+
                 isDark: isDark,
               );
             }, childCount: events.length),
@@ -588,9 +590,11 @@ class ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  void _navigateToEdit(BuildContext context, Map<String, dynamic> event) {
-    context.push('/edit-event', extra: event);
-  }
+ void _navigateToEdit(BuildContext context, Map<String, dynamic> eventMap) {
+  final event = EventEntity.fromMap(eventMap);
+  context.push('/edit-event', extra: event);
+}
+
 
   void _showDeleteDialog(
     BuildContext context,

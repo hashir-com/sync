@@ -26,7 +26,7 @@ class HeaderImage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch favorite IDs to check if this event is favorited
     final favoriteIds = ref.watch(favoritesProvider);
-    final isFavorite = favoriteIds.contains(event.id ?? '');
+    final isFavorite = favoriteIds.contains(event.id);
 
     // Build header with image and overlay
     return Stack(
@@ -79,7 +79,7 @@ class HeaderImage extends ConsumerWidget {
                     () {
                       ref
                           .read(favoritesProvider.notifier)
-                          .toggleFavorite(event.id ?? '');
+                          .toggleFavorite(event.id);
                     },
                     isFavorite ? Colors.red : Colors.white,
                   ),

@@ -12,6 +12,8 @@ import 'package:sync_event/features/auth/data/datasources/auth_remote_datasource
 import 'package:sync_event/features/auth/data/models/user_model.dart';
 import 'package:sync_event/features/auth/domain/entities/user_entity.dart';
 import 'package:sync_event/features/auth/domain/repo/auth_repo.dart';
+import 'package:sync_event/core/services/fcm_token_service.dart';
+
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -61,6 +63,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
           final userEntity = UserModel.fromFirebase(user);
           await localDataSource.cacheUserData(userEntity.toJson().toString());
+          await FcmTokenService.syncToken();
 
           return Right(userEntity);
         }
@@ -88,6 +91,7 @@ class AuthRepositoryImpl implements AuthRepository {
         if (user != null) {
           final userEntity = UserModel.fromFirebase(user);
           await localDataSource.cacheUserData(userEntity.toJson().toString());
+          await FcmTokenService.syncToken();
           return Right(userEntity);
         }
         return const Left(AuthFailure(message: 'Login failed'));
@@ -168,6 +172,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
           final userEntity = UserModel.fromFirebase(user);
           await localDataSource.cacheUserData(userEntity.toJson().toString());
+          await FcmTokenService.syncToken();
           return Right(userEntity);
         }
 
@@ -201,6 +206,7 @@ class AuthRepositoryImpl implements AuthRepository {
           (user) async {
             final userEntity = UserModel.fromFirebase(user);
             await localDataSource.cacheUserData(userEntity.toJson().toString());
+            await FcmTokenService.syncToken();
             verificationCompleted(userEntity);
           },
           verificationFailed,
@@ -224,6 +230,7 @@ class AuthRepositoryImpl implements AuthRepository {
         if (user != null) {
           final userEntity = UserModel.fromFirebase(user);
           await localDataSource.cacheUserData(userEntity.toJson().toString());
+          await FcmTokenService.syncToken();
           return Right(userEntity);
         }
         return const Left(AuthFailure(message: 'OTP verification failed'));
@@ -240,6 +247,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> signOut() async {
     try {
+      await FcmTokenService.clearToken();
       await remoteDataSource.signOut();
       await localDataSource.clearUserData();
       return const Right(null);
@@ -247,6 +255,8 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(UnknownFailure(message: e.toString()));
     }
   }
+
+  
 
   @override
   Stream<Either<Failure, UserEntity?>> get authStateChanges {
