@@ -133,6 +133,7 @@ dependencies:
   firebase_in_app_messaging: ^0.8.1+10
   firebase_analytics: ^11.6.0
   cloud_functions: ^5.6.2
+  firebase_app_check: ^0.3.2+10
 
 dev_dependencies:
   
@@ -159,4 +160,3 @@ flutter:
     - assets/images/onboarding1.png
     - assets/images/onboarding2.png
     - assets/images/sync_logo_icon.png
-    - .env

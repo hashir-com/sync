@@ -15,7 +15,7 @@ import 'package:sync_event/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  // await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
   final FirebaseAnalytics analytics = FirebaseAnalytics.instance;

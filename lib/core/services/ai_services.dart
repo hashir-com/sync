@@ -21,14 +21,21 @@ class AIService {
       final callable = FirebaseFunctions.instance
           .httpsCallable('generateEventDescription');
 
-      final result = await callable.call({
-        'title': title,
-        'date': date,
-        'time': time,
-        'duration': duration,
-        'location': location,
-        'existingDescription': existingDescription,
-      });
+      final prompt = '''
+Write a professional, engaging event description.
+
+Title: $title
+Date: $date
+Time: $time
+Duration: $duration
+Location: $location
+${existingDescription != null ? 'Existing description: $existingDescription' : ''}
+''';
+
+final result = await callable.call({
+  'prompt': prompt,
+});
+
 
       return result.data['text'] as String;
       

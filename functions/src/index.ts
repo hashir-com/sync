@@ -1,17 +1,22 @@
-// src/index.ts - COMPLETE CLEAN VERSION
+// src/index.ts - FIXED VERSION
 import * as admin from "firebase-admin";
 import * as nodemailer from "nodemailer";
 import { onDocumentCreated, onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onCall } from "firebase-functions/v2/https";
-import { defineSecret } from "firebase-functions/params";
+import { setGlobalOptions } from "firebase-functions/v2";
+import { VertexAI } from "@google-cloud/vertexai";
+import * as functions from "firebase-functions";
+
+setGlobalOptions({
+  region: "us-central1",
+  memory: "256MiB",
+  cpu: 1,
+});
+
 
 admin.initializeApp();
-
-const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
-
-console.log("Firebase Functions initialized GEMINI_API_KEY is set:", !!process.env.GEMINI_API_KEY);
 
 // Use environment variables for Gmail credentials
 const transporter = nodemailer.createTransport({
@@ -26,7 +31,7 @@ const transporter = nodemailer.createTransport({
 
 export const deleteExpiredEvents = onSchedule(
   {
-    schedule: "every 5 minutes",
+    schedule: "every 60 minutes",
     timeZone: "UTC",
   },
   async () => {
@@ -330,153 +335,94 @@ export const sendChatPushNotification = onDocumentCreated(
   }
 );
 
-// ========== AI FUNCTIONS ==========
 
-export const generateEventDescription = onCall(
-  {
-    secrets: [GEMINI_API_KEY],
-  },
-  async (request) => {
-    try {
-      if (!request.auth) {
-        throw new Error("Authentication required");
-      }
+/* =======================
+   AI FUNCTIONS - FIXED
+======================= */
 
-      const { title, date, time, duration, location, existingDescription } =
-        request.data;
+// ✅ Use latest model matching UI
+export const generateEventDescription = onCall(async (request) => {
+  const { data, auth } = request;
 
-      if (!title || !date || !location) {
-        throw new Error("Missing required fields");
-      }
-
-      const apiKey = GEMINI_API_KEY.value();
-
-      const prompt = existingDescription
-        ? `Improve this event description: ${existingDescription}`
-        : `Create a brief, engaging event description for: ${title} on ${date} at ${location}. Time: ${time}. Duration: ${duration}.`;
-
-      const models = [
-        "gemini-pro",
-        "gemini-1.5-pro-latest",
-        "gemini-1.5-flash-latest",
-      ];
-
-      for (const model of models) {
-        try {
-          logger.info(`Trying model: ${model}`);
-
-          const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                  temperature: 0.7,
-                  maxOutputTokens: 500,
-                },
-              }),
-            }
-          );
-
-          const data = await res.json();
-
-          if (res.ok) {
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              logger.info(`Success with model: ${model}`);
-              return {
-                text: text.replace(/\*\*/g, "").replace(/\*/g, "").trim(),
-              };
-            }
-          } else {
-            logger.warn(`Model ${model} failed:`, JSON.stringify(data));
-          }
-        } catch (e) {
-          logger.warn(`Model ${model} error:`, e);
-        }
-      }
-
-      throw new Error(
-        "All models failed. Please check your API key and try again."
-      );
-    } catch (error: any) {
-      logger.error("Error:", error);
-      throw new Error(error.message || "Failed to generate description");
-    }
+  if (!auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Unauthenticated");
   }
-);
 
-export const generateEventIdeas = onCall(
-  {
-    secrets: [GEMINI_API_KEY],
-  },
-  async (request) => {
-    try {
-      if (!request.auth) {
-        throw new Error("Authentication required");
-      }
-
-      const { title, date, location } = request.data;
-
-      if (!title || !date || !location) {
-        throw new Error("Missing required fields");
-      }
-
-      const apiKey = GEMINI_API_KEY.value();
-
-      const prompt = `Generate 5 creative ideas for: ${title} on ${date} at ${location}. Format as numbered list.`;
-
-      const models = [
-        "gemini-pro",
-        "gemini-1.5-pro-latest",
-        "gemini-1.5-flash-latest",
-      ];
-
-      for (const model of models) {
-        try {
-          logger.info(`Trying model: ${model}`);
-
-          const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                  temperature: 0.8,
-                  maxOutputTokens: 600,
-                },
-              }),
-            }
-          );
-
-          const data = await res.json();
-
-          if (res.ok) {
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              logger.info(`Success with model: ${model}`);
-              return {
-                text: text.replace(/\*\*/g, "").replace(/\*/g, "").trim(),
-              };
-            }
-          } else {
-            logger.warn(`Model ${model} failed:`, JSON.stringify(data));
-          }
-        } catch (e) {
-          logger.warn(`Model ${model} error:`, e);
-        }
-      }
-
-      throw new Error(
-        "All models failed. Please check your API key and try again."
-      );
-    } catch (error: any) {
-      logger.error("Error:", error);
-      throw new Error(error.message || "Failed to generate ideas");
-    }
+  if (!data?.prompt) {
+    throw new functions.https.HttpsError("invalid-argument", "Prompt is required");
   }
-);
+
+  try {
+    const vertexAI = new VertexAI({
+      project: process.env.GCLOUD_PROJECT!,
+      location: "us-central1",
+    });
+
+    const model = vertexAI.getGenerativeModel({
+      model: "gemini-2.5-pro",  // ✅ Updated to match "Gemini 2.5"
+    });
+
+    const result = await model.generateContent({
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: data.prompt }],
+        },
+      ],
+    });
+
+    return {
+      text: result.response.candidates?.[0]?.content?.parts?.[0]?.text ?? "",
+    };
+  } catch (err) {
+    logger.error("Gemini generation failed", err);
+    throw new functions.https.HttpsError("internal", "AI generation failed. Please try again.");
+  }
+});
+
+export const generateEventIdeas = onCall(async (request) => {
+  const { data, auth } = request;
+
+  if (!auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Unauthenticated");
+  }
+
+  if (!data?.title || !data?.date || !data?.location) {
+    throw new functions.https.HttpsError("invalid-argument", "Missing required fields: title, date, location");
+  }
+
+  try {
+    const vertexAI = new VertexAI({
+      project: process.env.GCLOUD_PROJECT!,
+      location: "us-central1",
+    });
+
+    const model = vertexAI.getGenerativeModel({
+      model: "gemini-2.5-pro",
+    });
+
+    const prompt = `Generate creative and innovative ideas for this event:
+
+Event Title: ${data.title}
+Date: ${data.date}
+Location: ${data.location}
+
+Please provide 5-7 engaging suggestions to make this event memorable and successful. Include ideas for activities, themes, engagement strategies, or unique elements.`;
+
+    const result = await model.generateContent({
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: prompt }],
+        },
+      ],
+    });
+
+    return {
+      text: result.response.candidates?.[0]?.content?.parts?.[0]?.text ?? "",
+    };
+  } catch (err) {
+    logger.error("Gemini generation failed", err);
+    throw new functions.https.HttpsError("internal", "AI generation failed. Please try again.");
+  }
+});
