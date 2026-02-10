@@ -5,6 +5,7 @@ import 'package:sync_event/core/constants/app_sizes.dart';
 import 'package:sync_event/core/constants/app_text_styles.dart';
 import 'package:sync_event/core/util/theme_util.dart';
 import 'package:cached_network_image/cached_network_image.dart'; // Add this for image handling
+import 'dart:async';
 
 class BannerCard extends StatelessWidget {
   final dynamic event;
@@ -195,6 +196,128 @@ class BannerCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class BannerSlider extends StatefulWidget {
+  final List<dynamic> events;
+  final bool isDark;
+  final Function(dynamic event)? onFavoriteTap;
+  final Function(dynamic event)? onTap;
+  final List<bool>? isFavorites; // Optional: per-event favorite status
+
+  const BannerSlider({
+    super.key,
+    required this.events,
+    required this.isDark,
+    this.onFavoriteTap,
+    this.onTap,
+    this.isFavorites,
+  });
+
+  @override
+  State<BannerSlider> createState() => _BannerSliderState();
+}
+
+class _BannerSliderState extends State<BannerSlider> {
+  late PageController _controller;
+  Timer? _timer;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = PageController();
+    _startAutoSlide();
+  }
+
+  void _startAutoSlide() {
+    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      final nextIndex = (_currentIndex + 1) % widget.events.length;
+      setState(() {
+        _currentIndex = nextIndex;
+      });
+      _controller.animateToPage(
+        nextIndex,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.events.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final effectiveIsFavorites =
+        widget.isFavorites ?? List<bool>.filled(widget.events.length, false);
+
+    return Column(
+      children: [
+        Expanded(
+          child: PageView.builder(
+            controller: _controller,
+            itemCount: widget.events.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+              // Pause timer on manual swipe, resume after delay
+              _timer?.cancel();
+              Timer(const Duration(seconds: 3), () {
+                if (mounted) _startAutoSlide();
+              });
+            },
+            itemBuilder: (context, index) {
+              final event = widget.events[index];
+              return BannerCard(
+                event: event,
+                isDark: widget.isDark,
+                isFavorite: effectiveIsFavorites[index],
+                onFavoriteTap: () => widget.onFavoriteTap?.call(event),
+                onTap: () => widget.onTap?.call(event),
+              );
+            },
+          ),
+        ),
+        // Dots indicator
+        if (widget.events.length > 1)
+          Padding(
+            padding: EdgeInsets.all(AppSizes.paddingMedium),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.events.length,
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  height: 8,
+                  width: _currentIndex == index ? 24 : 8,
+                  decoration: BoxDecoration(
+                    color: _currentIndex == index
+                        ? AppColors.getPrimary(widget.isDark)
+                        : AppColors.getTextSecondary(widget.isDark),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

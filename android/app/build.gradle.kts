@@ -44,10 +44,12 @@ android {
 
     signingConfigs {
         create("release") {
+
             keyAlias = keystoreProperties.getProperty("keyAlias") ?: "upload"
             keyPassword = keystoreProperties.getProperty("keyPassword") ?: ""
             storeFile = file(keystoreProperties.getProperty("storeFile") ?: "upload-keystore.jks")
             storePassword = keystoreProperties.getProperty("storePassword") ?: ""
+
         }
     }
 
@@ -55,7 +57,12 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("release")
+            
+            // Only use release signing if keystore exists
+            val keystoreFile = file("../upload-keystore.jks")
+            if (keystoreFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -63,8 +70,14 @@ android {
             )
         }
 
+<<<<<<< HEAD
         debug {
             // Debug builds don't need signing config for development
+=======
+        getByName("debug") {
+            // REMOVED: Don't use release signing for debug builds
+            // Debug builds will use the default debug signing automatically
+>>>>>>> main
         }
     }
 }
@@ -77,5 +90,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.razorpay:checkout:1.6.33")
+<<<<<<< HEAD
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+=======
+>>>>>>> main
 }

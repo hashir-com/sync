@@ -73,10 +73,12 @@ class SocialButtons extends ConsumerWidget {
                       } else if (authState.error != null && context.mounted) {
                         _showSnackBar(
                           context,
-                          'Sign-in failed: ${authState.error}',
+                          'Sign-inn failed: ${authState.error}',
                           isDark: isDark,
                           isError: true,
                         );
+                       print(
+                            'SocialButtons: Google sign-in error: ${authState.error}');   
                       }
                     },
               child: Container(
