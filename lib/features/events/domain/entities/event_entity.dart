@@ -170,4 +170,57 @@ class EventEntity extends Equatable {
 }
 
 
+EventEntity copyWith({
+  String? title,
+  String? description,
+  String? location,
+  double? latitude,
+  double? longitude,
+  DateTime? startTime,
+  DateTime? endTime,
+  String? imageUrl,
+  String? documentUrl,
+  List<String>? attendees,
+  int? maxAttendees,
+  String? category,
+  double? ticketPrice,
+  String? status,
+  String? approvalReason,
+  String? rejectionReason,
+  Map<String, int>? categoryCapacities,
+  Map<String, double>? categoryPrices,
+  List<int>? takenSeats,
+  int? availableTickets,
+  DateTime? updatedAt,
+}) {
+  return EventEntity(
+    id: id,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    location: location ?? this.location,
+    latitude: latitude ?? this.latitude,
+    longitude: longitude ?? this.longitude,
+    startTime: startTime ?? this.startTime,
+    endTime: endTime ?? this.endTime,
+    imageUrl: imageUrl ?? this.imageUrl,
+    documentUrl: documentUrl ?? this.documentUrl,
+    organizerId: organizerId,
+    organizerName: organizerName,
+    attendees: attendees ?? this.attendees,
+    maxAttendees: maxAttendees ?? this.maxAttendees,
+    category: category ?? this.category,
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? DateTime.now(),
+    ticketPrice: ticketPrice ?? this.ticketPrice,
+    status: status ?? this.status,
+    approvalReason: approvalReason ?? this.approvalReason,
+    rejectionReason: rejectionReason ?? this.rejectionReason,
+    categoryCapacities: categoryCapacities ?? this.categoryCapacities,
+    categoryPrices: categoryPrices ?? this.categoryPrices,
+    takenSeats: takenSeats ?? this.takenSeats,
+    availableTickets: availableTickets ?? this.availableTickets,
+  );
+}
+
+
 }

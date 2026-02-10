@@ -112,8 +112,8 @@ class EventModel extends EventEntity {
       'longitude': longitude,
       'startTime': Timestamp.fromDate(startTime),
       'endTime': Timestamp.fromDate(endTime),
-      'imageUrl': imageUrl,
-      'documentUrl': documentUrl,
+      if (imageUrl != null) 'imageUrl': imageUrl,
+      if (documentUrl != null) 'documentUrl': documentUrl,
       'organizerId': organizerId,
       'organizerName': organizerName,
       'attendees': attendees,
@@ -132,6 +132,7 @@ class EventModel extends EventEntity {
     };
   }
 
+  @override
   EventModel copyWith({
     String? id,
     String? title,
